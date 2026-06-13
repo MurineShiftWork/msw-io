@@ -142,8 +142,8 @@ def align_session_to_ephys(
 
     for idx, (bpod_t, bv) in zip(
         barcode_rows.index,
-        zip(bpod_barcode_times, msw_barcode_values, strict=False),
-        strict=False,
+        zip(bpod_barcode_times, msw_barcode_values, strict=True),
+        strict=True,
     ):
         if np.isnan(bpod_t):
             logging.debug(f"  Skipping barcode at index {idx}: NaN bpod time")
@@ -188,7 +188,7 @@ def align_session_to_ephys(
 
     residuals_ms = [
         (ephys_t - bpod_to_ephys(bpod_t)) * 1000
-        for bpod_t, ephys_t in zip(bpod_anchors, ephys_anchors, strict=False)
+        for bpod_t, ephys_t in zip(bpod_anchors, ephys_anchors, strict=True)
     ]
     logging.info(
         f"Alignment: slope={slope:.8f}, intercept={intercept:.4f}s | "
@@ -198,7 +198,7 @@ def align_session_to_ephys(
 
     df["trial_start_ephys"] = df["Trial start timestamp"].apply(bpod_to_ephys)
     df["barcode_ephys_time"] = np.nan
-    for idx, ephys_t in zip(matched_indices, ephys_anchors, strict=False):
+    for idx, ephys_t in zip(matched_indices, ephys_anchors, strict=True):
         df.at[idx, "barcode_ephys_time"] = ephys_t
     df["alignment_slope"] = slope
     df["alignment_intercept"] = intercept
@@ -285,7 +285,7 @@ def verify_rpi_barcode_decoding(
 
     wall_time_errors_ms = []
     matched_values = []
-    for bv, wt in zip(msw_values, msw_wall_times, strict=False):
+    for bv, wt in zip(msw_values, msw_wall_times, strict=True):
         if bv in rpi_lookup:
             error_ms = (rpi_lookup[bv] - wt) * 1000
             wall_time_errors_ms.append(error_ms)
