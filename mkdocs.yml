@@ -1,0 +1,41 @@
+site_name: msw-io
+site_description: 'Murine Shift Work session data IO: file codec, namespace utilities, and session readers.'
+site_url: https://murineshiftwork.github.io/msw-io
+repo_url: https://github.com/murineshiftwork/msw-io
+repo_name: murineshiftwork/msw-io
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    scheme: slate
+    primary: teal
+    accent: teal
+  features:
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: google
+            show_root_heading: true
+            show_source: false
+            show_submodules: false
+
+markdown_extensions:
+  - admonition
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md

@@ -1,0 +1,171 @@
+"""Tests for namespace.msw.yaml, msw_files, and TaskRunner.get_path()."""
+
+from pathlib import Path
+
+import pytest
+
+_NAMESPACE_DIR = Path(__file__).parent.parent / "src" / "msw_io" / "namespace"
+
+_BASE = "/data/mouse_01/mouse_01__20260524_143022_123456__sequence/mouse_01__20260524_143022_123456__sequence"
+
+
+# ---------------------------------------------------------------------------
+# namespace.msw.yaml loads correctly
+
+
+def test_msw_yaml_loads():
+    from acquisition_namespace import NamespaceBuilder
+
+    b = NamespaceBuilder.from_yaml(_NAMESPACE_DIR / "namespace.msw.yaml")
+    assert b.spec.version == "3.0"
+    assert b.hierarchy == ["subject", "session", "acquisition", "file"]
+    assert "acquisition" not in b.optional_levels
+
+
+def test_msw_yaml_loads_correctly():
+    from acquisition_namespace import NamespaceBuilder
+
+    p = _NAMESPACE_DIR / "namespace.msw.yaml"
+    assert p.exists(), f"Missing: {p}"
+    b = NamespaceBuilder.from_yaml(p)
+    assert b.hierarchy == ["subject", "session", "acquisition", "file"]
+
+
+# ---------------------------------------------------------------------------
+# get_msw_builder() — lazy singleton
+
+
+def test_get_msw_builder_returns_builder():
+    from msw_io.namespace.paths import get_msw_builder
+
+    b = get_msw_builder()
+    assert b.hierarchy == ["subject", "session", "acquisition", "file"]
+    assert "acquisition" not in b.optional_levels
+
+
+def test_get_msw_builder_is_cached():
+    from msw_io.namespace.paths import get_msw_builder
+
+    assert get_msw_builder() is get_msw_builder()
+
+
+# ---------------------------------------------------------------------------
+# build_path("file", ...) round-trip
+
+
+@pytest.mark.parametrize(
+    "artifact",
+    ["session.yaml", "df.jsonl", "log", "jsonl", "plot_spec.yaml", "stimulation.json"],
+)
+def test_build_file_path_roundtrip(artifact):
+    from msw_io.namespace.paths import get_msw_builder
+
+    b = get_msw_builder()
+    values = {
+        "subject": "mouse_01",
+        "datetime": "20260524_143022_123456",
+        "task": "sequence",
+        "artifact": artifact,
+    }
+    fname = b.build_path("file", values)
+    assert fname == f"mouse_01__20260524_143022_123456__sequence.msw.{artifact}"
+
+    # extract round-trip
+    extracted = b.extract_level_values("file", fname)
+    assert extracted["artifact"] == artifact
+    assert extracted["session"] == "mouse_01__20260524_143022_123456__sequence"
+
+
+def test_build_file_legacy_datetime():
+    from msw_io.namespace.paths import get_msw_builder
+
+    b = get_msw_builder()
+    fname = b.build_path(
+        "file",
+        {
+            "subject": "mouse_01",
+            "datetime": "20210718_152153",
+            "task": "probabilistic_switching",
+            "artifact": "session.yaml",
+        },
+    )
+    assert (
+        fname == "mouse_01__20210718_152153__probabilistic_switching.msw.session.yaml"
+    )
+
+
+# ---------------------------------------------------------------------------
+# msw_file()
+
+
+def test_msw_file_produces_correct_path():
+    from msw_io.namespace import msw_file
+
+    p = msw_file(_BASE, "session.yaml")
+    assert p.as_posix() == _BASE + ".msw.session.yaml"
+    assert isinstance(p, Path)
+
+
+def test_msw_file_df_jsonl():
+    from msw_io.namespace import msw_file
+
+    p = msw_file(_BASE, "df.jsonl")
+    assert p.as_posix() == _BASE + ".msw.df.jsonl"
+
+
+def test_msw_file_accepts_path_object():
+    from msw_io.namespace import msw_file
+
+    p = msw_file(Path(_BASE), "log")
+    assert p.as_posix() == _BASE + ".msw.log"
+
+
+# ---------------------------------------------------------------------------
+# is_msw_file()
+
+
+def test_is_msw_file_true_for_session_yaml():
+    from msw_io.namespace import is_msw_file
+
+    assert is_msw_file(_BASE + ".msw.session.yaml")
+
+
+def test_is_msw_file_true_for_df_jsonl():
+    from msw_io.namespace import is_msw_file
+
+    assert is_msw_file(_BASE + ".msw.df.jsonl")
+
+
+def test_is_msw_file_false_for_plain_csv():
+    from msw_io.namespace import is_msw_file
+
+    assert not is_msw_file("/data/subject/session/something.csv")
+
+
+def test_is_msw_file_false_for_no_separator():
+    from msw_io.namespace import is_msw_file
+
+    assert not is_msw_file("subject__20260524_143022_123456__task.jsonl")
+
+
+# ---------------------------------------------------------------------------
+# msw_artifact()
+
+
+def test_msw_artifact_session_yaml():
+    from msw_io.namespace import msw_artifact
+
+    assert msw_artifact(_BASE + ".msw.session.yaml") == "session.yaml"
+
+
+def test_msw_artifact_df_jsonl():
+    from msw_io.namespace import msw_artifact
+
+    assert msw_artifact(_BASE + ".msw.df.jsonl") == "df.jsonl"
+
+
+def test_msw_artifact_raises_for_non_msw():
+    from msw_io.namespace import msw_artifact
+
+    with pytest.raises(ValueError, match="Not an MSW file"):
+        msw_artifact("/data/something.csv")

@@ -1,0 +1,15 @@
+# Changes here will be overwritten by Copier
+_commit: v0.8.5
+_src_path: gh:larsrollik/templatepy
+author_email: lars@rollik.me
+author_name: Lars B. Rollik
+github_repo: msw-io
+github_username: murineshiftwork
+license_type: noncommercial
+private_repo_deps: false
+project_description: 'Murine Shift Work session data IO: file codec, namespace utilities, and session readers.'
+project_name: msw-io
+project_slug: msw_io
+python_requires: '3.10'
+year: '2026'
+test_on_windows: false
