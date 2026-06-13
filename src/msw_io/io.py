@@ -1,4 +1,4 @@
-"""JSONL trial data codec for MSW sessions (v2.0.0).
+"""JSONL trial data codec for MSW sessions (MSW_FILE_VERSION 1.0.0).
 
 Format: newline-delimited JSON. First line is a version header.
 Numpy arrays are serialised as plain lists; on load they remain lists,
