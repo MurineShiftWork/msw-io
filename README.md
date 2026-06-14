@@ -1,7 +1,6 @@
 # msw-io
 
 [![PyPI](https://img.shields.io/pypi/v/msw-io.svg)](https://pypi.org/project/msw-io)
-[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
 Murine Shift Work session data IO: file codec, namespace utilities, and session readers.
 
