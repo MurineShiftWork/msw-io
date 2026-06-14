@@ -4,6 +4,11 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      publish_only:
+        description: 'Skip version bump and publish the current VERSION tag'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -30,6 +35,7 @@ jobs:
 
       - name: Bump version
         id: bump
+        if: inputs.publish_only != true
         run: |
           uvx --from commitizen cz bump --yes || EXIT=$?
           if [ "${EXIT:-0}" -eq 21 ]; then
@@ -43,15 +49,22 @@ jobs:
           git push origin "v${VERSION}"
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
 
+      - name: Read version (publish-only mode)
+        id: read_version
+        if: inputs.publish_only == true
+        run: |
+          VERSION=$(cat VERSION)
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
       - name: Build
         if: steps.bump.outputs.skipped != 'true'
         run: uv build
 
       - name: Create GitHub release
-        if: steps.bump.outputs.skipped != 'true'
+        if: steps.bump.outputs.skipped != 'true' && inputs.publish_only != true
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: "v${{ steps.bump.outputs.version }}"
+          tag_name: "v${{ steps.bump.outputs.version || steps.read_version.outputs.version }}"
           files: dist/*
           generate_release_notes: false
 
