@@ -1,4 +1,4 @@
-"""MSW session file naming — the .msw. artifact namespace.
+"""MSW session file naming: the .msw. artifact namespace.
 
 Session-derived files follow the pattern defined in namespace.msw.yaml:
     {session_basename}.msw.{artifact}

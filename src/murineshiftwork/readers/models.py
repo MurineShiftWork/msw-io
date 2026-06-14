@@ -1,11 +1,11 @@
-"""MswSession — structured result of reading a single MSW session directory."""
+"""MswSession: structured result of reading a single MSW session directory."""
 
 from __future__ import annotations
 
-from pathlib import Path  # noqa: TC003 — pydantic validates Path fields at runtime
+from pathlib import Path  # noqa: TC003  # pydantic validates Path fields at runtime
 from typing import Any
 
-import pandas as pd  # noqa: TC002 — pydantic validates pd.DataFrame at runtime
+import pandas as pd  # noqa: TC002  # pydantic validates pd.DataFrame at runtime
 from pydantic import BaseModel, ConfigDict
 
 
@@ -40,7 +40,7 @@ class MswSession(BaseModel):
     is_complete: bool
     is_ephys: bool
 
-    # acquisition context — set by load_acquisition(), absent for standalone sessions
+    # acquisition context: set by load_acquisition(), absent for standalone sessions
     acquisition_name: str | None = None
     acquisition_dir: Path | None = None
 

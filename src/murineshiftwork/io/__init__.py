@@ -6,7 +6,7 @@ which is compatible with all downstream DataFrame operations.
 
 Tuple preservation
 ------------------
-JSON has no tuple type — both lists and tuples serialise as arrays. To preserve
+JSON has no tuple type: both lists and tuples serialise as arrays. To preserve
 Python tuples across the round-trip, tuples are encoded as {"__tuple__": [...]}
 and decoded back to tuples on load. This keeps the computational interface
 identical between JSONL and legacy pkl sessions (e.g. block_type_values).

@@ -1,14 +1,14 @@
 """Reader tests against checked-in task-specific session fixtures.
 
 Fixtures (tests/data/):
-  fixture_sequence/       — _test_subject, setup-npx2, 2026-05-20
+  fixture_sequence/      : _test_subject, setup-npx2, 2026-05-20
                             65 task trials + 1 barcode trial, v2 YAML format.
                             Fields include: level, outcome, poke_events,
-                            water_ul_trial (old name — back-compat test).
-  fixture_fixedsubjects/  — _test_subject, 2026-05-18
+                            water_ul_trial (old name: back-compat test).
+  fixture_fixedsubjects/ : _test_subject, 2026-05-18
                             6 task trials + 2 barcode trials, v2 YAML format.
                             Fields include: choice, rewarded, block_number.
-  fixture_optotagging/    — _test_subject, 2026-05-27, ephys parent session.
+  fixture_optotagging/   : _test_subject, 2026-05-27, ephys parent session.
                             Two subprotocols in session_manifest.yaml:
                             power_ramp_1mw (complete, has JSONL) and
                             power_ramp_2mw (aborted, JSONL absent).
@@ -192,7 +192,7 @@ class TestFixedSubjectsFixture:
 
 
 # ---------------------------------------------------------------------------
-# Optotagging fixture — ephys parent session + multi-protocol loading
+# Optotagging fixture: ephys parent session + multi-protocol loading
 # ---------------------------------------------------------------------------
 
 

@@ -1,8 +1,8 @@
 """Acquisition and session manifest writers.
 
 Manifests are YAML files written progressively during a session:
-  acquisition_manifest.yaml  — inside the acquisition dir; lists sessions
-  session_manifest.yaml      — inside the session dir; lists subprotocols (opto) or empty
+  acquisition_manifest.yaml : inside the acquisition dir; lists sessions
+  session_manifest.yaml     : inside the session dir; lists subprotocols (opto) or empty
 
 All write operations are atomic (write temp file, rename).
 """

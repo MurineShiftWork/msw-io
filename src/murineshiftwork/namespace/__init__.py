@@ -7,6 +7,10 @@ from murineshiftwork.namespace.paths import (
 from murineshiftwork.namespace.paths import NAMESPACE_LEGACY as NAMESPACE_LEGACY
 from murineshiftwork.namespace.paths import NAMESPACE_V1 as NAMESPACE_V1
 from murineshiftwork.namespace.paths import build_data_paths as build_data_paths
-from murineshiftwork.namespace.paths import generate_session_paths as generate_session_paths
+from murineshiftwork.namespace.paths import (
+    generate_session_paths as generate_session_paths,
+)
 from murineshiftwork.namespace.paths import get_msw_builder as get_msw_builder
-from murineshiftwork.namespace.paths import parse_session_basename as parse_session_basename
+from murineshiftwork.namespace.paths import (
+    parse_session_basename as parse_session_basename,
+)

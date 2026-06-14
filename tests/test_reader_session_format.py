@@ -1,4 +1,4 @@
-"""Retrograde reader framework — session format detection tests.
+"""Retrograde reader framework: session format detection tests.
 
 Parametrized across all tests/data/fixture_* directories so that:
   - every fixture is validated against the MSW namespace spec
@@ -114,7 +114,7 @@ def test_detect_artifact_format_standalone(fixture, ns, af):
 
 
 # ---------------------------------------------------------------------------
-# Negative cases — non-MSW directory
+# Negative cases: non-MSW directory
 
 
 def test_detect_format_non_msw_dir(tmp_path):

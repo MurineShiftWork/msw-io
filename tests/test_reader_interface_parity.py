@@ -61,7 +61,7 @@ def compare_dfs(
 ) -> tuple[list[str], list[str]]:
     """Returns (failures, warnings).
 
-    Failures: dtype class mismatches on shared columns — these would break computation.
+    Failures: dtype class mismatches on shared columns: these would break computation.
     Warnings: column-presence differences (task-version or event-occurrence) and
               list-vs-tuple differences (pre-fix JSONL files lack __tuple__ sentinel).
     """
@@ -77,11 +77,11 @@ def compare_dfs(
     # Column-presence differences are content/version differences, not reader bugs.
     if only_new:
         warnings.append(
-            f"Columns only in NEW ({len(only_new)}) — likely task version update: {sorted(only_new)}"
+            f"Columns only in NEW ({len(only_new)}): likely task version update: {sorted(only_new)}"
         )
     if only_leg:
         warnings.append(
-            f"Columns only in LEGACY ({len(only_leg)}) — events absent in short/test session: {sorted(only_leg)}"
+            f"Columns only in LEGACY ({len(only_leg)}): events absent in short/test session: {sorted(only_leg)}"
         )
 
     shared = sorted(cols_new & cols_leg)
@@ -102,10 +102,10 @@ def compare_dfs(
         if ct_new != ct_leg and "all-null" not in (ct_new, ct_leg):
             # list vs tuple: known pre-fix artifact for JSONL files saved before the
             # __tuple__ sentinel encoding was added. New saves will round-trip tuples
-            # correctly. Warn rather than fail — downstream code handles both types.
+            # correctly. Warn rather than fail: downstream code handles both types.
             if set([ct_new, ct_leg]) == {"list", "tuple"}:
                 warnings.append(
-                    f"  {col}: list/tuple mismatch (pre-fix JSONL file — new saves correct)"
+                    f"  {col}: list/tuple mismatch (pre-fix JSONL file: new saves correct)"
                 )
             else:
                 cell_type_mismatches.append(
@@ -172,7 +172,7 @@ def main():
     if only_leg_k:
         print(f"  Only in LEGACY: {sorted(only_leg_k)}")
 
-    # msw_version only present in new sessions — not an issue
+    # msw_version only present in new sessions: not an issue
     expected_only_new = {"msw_version"}
     unexpected_only_new = only_new_k - expected_only_new
     if unexpected_only_new:
@@ -200,7 +200,7 @@ def main():
     df_leg = sd_leg.get("df")
 
     if df_new is None or df_leg is None:
-        all_issues.append("df is None in one or both sessions — cannot compare")
+        all_issues.append("df is None in one or both sessions: cannot compare")
         print("  ERROR: df is None in one or both sessions")
     else:
         print(f"  NEW    shape: {df_new.shape}  columns: {len(df_new.columns)}")
@@ -213,15 +213,15 @@ def main():
             print(f"  FAIL: {f}")
             all_issues.append(f)
         if not df_failures and not df_warnings:
-            print("  OK — same columns, same dtype classes, same cell types")
+            print("  OK: same columns, same dtype classes, same cell types")
         elif not df_failures:
             print(
-                "  OK — no dtype failures (warnings above are content/version differences)"
+                "  OK: no dtype failures (warnings above are content/version differences)"
             )
 
         # Show dtype summary for shared columns
         shared_cols = sorted(set(df_new.columns) & set(df_leg.columns))
-        print(f"\n  Shared columns ({len(shared_cols)}) — dtype NEW | LEGACY:")
+        print(f"\n  Shared columns ({len(shared_cols)}): dtype NEW | LEGACY:")
         for col in shared_cols:
             dn = str(df_new[col].dtype)
             dl = str(df_leg[col].dtype)
@@ -241,7 +241,7 @@ def main():
         for iss in st_issues:
             print(f"  INFO: {iss}")
     else:
-        print(f"  OK — same top-level keys ({len(st_new)})")
+        print(f"  OK: same top-level keys ({len(st_new)})")
 
     # ── 5. settings.process keys ──────────────────────────────────────────────
     print("\n[5] settings.process keys")
@@ -252,17 +252,17 @@ def main():
         for iss in sp_issues:
             print(f"  INFO: {iss}")
     else:
-        print(f"  OK — same top-level keys ({len(sp_new)})")
+        print(f"  OK: same top-level keys ({len(sp_new)})")
 
     # ── Result ────────────────────────────────────────────────────────────────
     print("\n" + "=" * 70)
     if all_issues:
-        print(f"FAIL — {len(all_issues)} issue(s):")
+        print(f"FAIL: {len(all_issues)} issue(s):")
         for iss in all_issues:
             print(f"  - {iss}")
         sys.exit(1)
     else:
-        print("PASS — both session formats present identical computational interface")
+        print("PASS: both session formats present identical computational interface")
 
 
 if __name__ == "__main__":

@@ -99,7 +99,7 @@ def load_acquisition(acquisition_dir) -> list[MswSession]:
             )
             sessions.append(sess)
         except Exception as exc:
-            log.warning("load_acquisition: skipping %s — %s", sd, exc)
+            log.warning("load_acquisition: skipping %s: %s", sd, exc)
 
     sessions.sort(key=lambda s: s.datetime_str)
     return sessions
@@ -128,7 +128,7 @@ def load_subject(subject_dir) -> list[MswSession]:
             try:
                 sessions.append(load_session(child))
             except Exception as exc:
-                log.warning("load_subject: skipping %s — %s", child, exc)
+                log.warning("load_subject: skipping %s: %s", child, exc)
         else:
             nested_sessions = [
                 d for d in child.iterdir() if d.is_dir() and "__" in d.name

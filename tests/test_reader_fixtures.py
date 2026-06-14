@@ -69,7 +69,7 @@ def test_save_reload_roundtrip_jsonl(tmp_path):
 
 
 # ---------------------------------------------------------------------------
-# PKL: trial_data (low-level via read_trial_df — pkl uses pd.read_pickle)
+# PKL: trial_data (low-level via read_trial_df: pkl uses pd.read_pickle)
 
 
 def test_read_trial_df_pkl_returns_dataframe():
@@ -167,7 +167,7 @@ def test_read_session_data_pkl_df_is_dataframe():
 
 
 # ---------------------------------------------------------------------------
-# LEGACY: read_session_data (ARTIFACT_FORMAT_LEGACY — task_settings.py + pkl)
+# LEGACY: read_session_data (ARTIFACT_FORMAT_LEGACY: task_settings.py + pkl)
 
 
 def _legacy_session_dir():
@@ -318,7 +318,7 @@ def test_read_session_data_opto_missing_subprotocol_file_does_not_crash():
 
 def test_read_session_data_opto_without_task_settings_not_complete():
     """The fixture pre-dates the update_session_yaml call in optotagging.
-    It has no task_settings section, so is_complete must be False — not an error."""
+    It has no task_settings section, so is_complete must be False: not an error."""
     from murineshiftwork.readers.session import read_session_data
 
     d = read_session_data(str(_optotagging_session_dir()))
@@ -351,7 +351,7 @@ def test_read_session_data_opto_with_task_settings_is_complete(tmp_path):
 
 
 # ---------------------------------------------------------------------------
-# _normalize_host_block — direct unit tests (all three legacy key variants)
+# _normalize_host_block: direct unit tests (all three legacy key variants)
 
 
 def test_normalize_host_block_parent_acquisition_key():
@@ -370,7 +370,7 @@ def test_normalize_host_block_parent_acquisition_key():
 
 
 def test_normalize_host_block_already_session_name_unchanged():
-    """New-style block already has session_name — must not be touched."""
+    """New-style block already has session_name: must not be touched."""
     from murineshiftwork.readers.session import _normalize_host_block
 
     block = {

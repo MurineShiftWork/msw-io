@@ -274,7 +274,7 @@ def verify_rpi_barcode_decoding(
         raise ValueError(f"Could not load trial df from {session_dir}")
 
     if "barcode_value" not in df.columns:
-        raise ValueError("No barcode_value column — was this a barcode test session?")
+        raise ValueError("No barcode_value column: was this a barcode test session?")
 
     barcode_rows = df[df["barcode_value"].notna()].copy()
     msw_values = barcode_rows["barcode_value"].astype(int).tolist()
@@ -319,7 +319,7 @@ def verify_rpi_barcode_decoding(
         f"rpi barcode verification: {n_matched}/{n_msw} matched "
         f"(decode rate {result['decode_rate']:.1%}, match rate {result['match_rate']:.1%})"
         if wall_time_errors_ms
-        else f"rpi barcode verification: 0/{n_msw} matched — no barcodes decoded from rpi."
+        else f"rpi barcode verification: 0/{n_msw} matched: no barcodes decoded from rpi."
     )
 
     return result

@@ -84,7 +84,7 @@ def test_completeness_passes_without_raw_key():
 
 
 # ---------------------------------------------------------------------------
-# read_session_data() — format metadata always present in output
+# read_session_data(): format metadata always present in output
 
 
 @pytest.mark.parametrize(
@@ -131,7 +131,9 @@ def test_unknown_format_raises():
                 "namespace_version": None,
             },
         ),
-        patch("murineshiftwork.readers.session.test_is_legacy_format", return_value=False),
+        patch(
+            "murineshiftwork.readers.session.test_is_legacy_format", return_value=False
+        ),
         pytest.raises(ValueError, match="No reader registered"),
     ):
         read_session_data(FIXTURES_DIR / "fixture_v2")
