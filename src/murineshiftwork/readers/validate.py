@@ -5,7 +5,7 @@ are present and loadable. Camera/RCE file checks belong in rpi_camera_ensemble.
 
 Usage
 -----
-    from msw_io.readers.validate import validate_session
+    from murineshiftwork.readers.validate import validate_session
 
     result = validate_session("/data/subject/session_dir")
     result.print_summary()
@@ -17,7 +17,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from msw_io.readers.session import read_session_data
+from murineshiftwork.readers.session import read_session_data
 
 
 @dataclass

@@ -19,7 +19,7 @@ def msw_file(session_file_path: str | Path, artifact: str) -> Path:
         session_file_path: Base session path (session_paths["session_file_path"]).
         artifact: Artifact name suffix (e.g. "session.yaml", "df.jsonl", "log").
     """
-    from msw_io.namespace.paths import get_msw_builder
+    from murineshiftwork.namespace.paths import get_msw_builder
 
     p = Path(session_file_path)
     b = get_msw_builder()
@@ -30,7 +30,7 @@ def msw_file(session_file_path: str | Path, artifact: str) -> Path:
 
 def is_msw_file(path: str | Path) -> bool:
     """Return True if the filename matches the MSW .msw. file pattern."""
-    from msw_io.namespace.paths import get_msw_builder
+    from murineshiftwork.namespace.paths import get_msw_builder
 
     try:
         get_msw_builder().extract_level_values("file", Path(path).name)
@@ -47,7 +47,7 @@ def msw_artifact(path: str | Path) -> str:
     Raises:
         ValueError: If the path is not an MSW file.
     """
-    from msw_io.namespace.paths import get_msw_builder
+    from murineshiftwork.namespace.paths import get_msw_builder
 
     try:
         return get_msw_builder().extract_level_values("file", Path(path).name)[

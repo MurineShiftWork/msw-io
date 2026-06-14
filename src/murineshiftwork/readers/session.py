@@ -4,8 +4,8 @@ from pathlib import Path
 import pandas as pd
 import yaml
 
-from msw_io.readers.files import read_json, read_settings_py, read_trial_df
-from msw_io.readers.namespace import (
+from murineshiftwork.readers.files import read_json, read_settings_py, read_trial_df
+from murineshiftwork.readers.namespace import (
     ARTIFACT_FORMAT_LEGACY,
     ARTIFACT_FORMAT_SEPARATE_JSON,
     ARTIFACT_FORMAT_SESSION_YAML,

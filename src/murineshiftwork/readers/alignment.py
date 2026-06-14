@@ -5,7 +5,7 @@ barcode decodability.
 
 Usage
 -----
-from msw_io.readers.alignment import align_session_to_ephys
+from murineshiftwork.readers.alignment import align_session_to_ephys
 
 df, result = align_session_to_ephys(
     session_dir="/data/.../session_dir",
@@ -25,7 +25,7 @@ from ttl_barcoder.core.barcode_ttl import BarcodeTTL
 from ttl_barcoder.core.config import BarcodeConfig
 from ttl_barcoder.hardware.bpod import BARCODE_FIRST_STATE_NAME
 
-from msw_io.readers.session import read_session_data
+from murineshiftwork.readers.session import read_session_data
 
 _INTER_BARCODE_GAP_S = 0.5
 

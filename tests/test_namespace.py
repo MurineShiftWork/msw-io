@@ -1,4 +1,4 @@
-"""Unit tests for msw_io.namespace.
+"""Unit tests for murineshiftwork.namespace.
 
 All tests use dummy scalar arguments — no CLI, no hardware, no config files.
 """
@@ -7,7 +7,7 @@ from datetime import datetime
 
 import pytest
 
-from msw_io.namespace.paths import (
+from murineshiftwork.namespace.paths import (
     _NAMESPACE_FORMATS,
     CURRENT_NAMESPACE_VERSION,
     NAMESPACE_LEGACY,

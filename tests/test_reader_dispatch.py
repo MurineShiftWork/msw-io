@@ -5,12 +5,12 @@ from unittest.mock import patch
 
 import pytest
 
-from msw_io.readers.namespace import (
+from murineshiftwork.readers.namespace import (
     ARTIFACT_FORMAT_LEGACY,
     ARTIFACT_FORMAT_SEPARATE_JSON,
     ARTIFACT_FORMAT_SESSION_YAML,
 )
-from msw_io.readers.session import (
+from murineshiftwork.readers.session import (
     _READER_DISPATCH,
     _check_completeness,
     _read_legacy,
@@ -125,13 +125,13 @@ def test_unknown_format_raises():
 
     with (
         patch(
-            "msw_io.readers.session.detect_session_format",
+            "murineshiftwork.readers.session.detect_session_format",
             return_value={
                 "artifact_format": "unknown_format",
                 "namespace_version": None,
             },
         ),
-        patch("msw_io.readers.session.test_is_legacy_format", return_value=False),
+        patch("murineshiftwork.readers.session.test_is_legacy_format", return_value=False),
         pytest.raises(ValueError, match="No reader registered"),
     ):
         read_session_data(FIXTURES_DIR / "fixture_v2")

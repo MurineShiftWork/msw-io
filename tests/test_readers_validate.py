@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from msw_io.readers.validate import ValidationResult, validate_session
+from murineshiftwork.readers.validate import ValidationResult, validate_session
 
 FIXTURES_DIR = Path(__file__).parent / "data"
 

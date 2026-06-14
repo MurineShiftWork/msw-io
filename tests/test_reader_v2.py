@@ -15,7 +15,7 @@ from pathlib import Path
 
 import pytest
 
-from msw_io.readers.session import read_session_data
+from murineshiftwork.readers.session import read_session_data
 
 FIXTURE_V2 = Path(__file__).parent / "data" / "fixture_v2"
 _skip_no_fixture = pytest.mark.skipif(

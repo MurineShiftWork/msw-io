@@ -31,7 +31,7 @@ def _skip_if_absent(d: Path) -> Path:
     ids=["jsonl", "pkl", "legacy", "optotagging"],
 )
 def test_load_session_returns_msw_session(rel_path):
-    from msw_io.readers import MswSession, load_session
+    from murineshiftwork.readers import MswSession, load_session
 
     d = _skip_if_absent(FIXTURES_DIR / rel_path)
     s = load_session(d)
@@ -55,7 +55,7 @@ def test_load_session_returns_msw_session(rel_path):
     ids=["jsonl", "pkl", "legacy", "optotagging"],
 )
 def test_load_session_subject(rel_path, expected_subject):
-    from msw_io.readers import load_session
+    from murineshiftwork.readers import load_session
 
     d = _skip_if_absent(FIXTURES_DIR / rel_path)
     s = load_session(d)
@@ -63,7 +63,7 @@ def test_load_session_subject(rel_path, expected_subject):
 
 
 def test_load_session_legacy_task_settings_in_model():
-    from msw_io.readers import load_session
+    from murineshiftwork.readers import load_session
 
     d = _skip_if_absent(
         FIXTURES_DIR
@@ -75,7 +75,7 @@ def test_load_session_legacy_task_settings_in_model():
 
 
 def test_load_session_opto_ephys_in_model():
-    from msw_io.readers import load_session
+    from murineshiftwork.readers import load_session
 
     d = _skip_if_absent(
         FIXTURES_DIR
@@ -89,7 +89,7 @@ def test_load_session_opto_ephys_in_model():
 
 def test_load_session_opto_host_block_normalized_to_session_name():
     """Old fixture uses parent_acquisition.acquisition_name — must load as session_name."""
-    from msw_io.readers import load_session
+    from murineshiftwork.readers import load_session
 
     d = _skip_if_absent(
         FIXTURES_DIR
@@ -102,7 +102,7 @@ def test_load_session_opto_host_block_normalized_to_session_name():
 
 
 def test_load_session_to_dict_has_required_keys():
-    from msw_io.readers import load_session
+    from murineshiftwork.readers import load_session
 
     d = _skip_if_absent(FIXTURES_DIR / "fixture_jsonl")
     s = load_session(d)
@@ -121,7 +121,7 @@ def test_load_session_to_dict_has_required_keys():
 
 
 def test_load_session_df_is_dataframe_or_none():
-    from msw_io.readers import load_session
+    from murineshiftwork.readers import load_session
 
     d = _skip_if_absent(FIXTURES_DIR / "fixture_jsonl")
     s = load_session(d)
@@ -129,7 +129,7 @@ def test_load_session_df_is_dataframe_or_none():
 
 
 def test_load_session_acquisition_context_none_by_default():
-    from msw_io.readers import load_session
+    from murineshiftwork.readers import load_session
 
     d = _skip_if_absent(FIXTURES_DIR / "fixture_jsonl")
     s = load_session(d)
@@ -146,14 +146,14 @@ def _opto_acquisition_dir():
 
 
 def test_load_acquisition_returns_list():
-    from msw_io.readers import load_acquisition
+    from murineshiftwork.readers import load_acquisition
 
     sessions = load_acquisition(_opto_acquisition_dir())
     assert isinstance(sessions, list)
 
 
 def test_load_acquisition_sessions_have_acquisition_name():
-    from msw_io.readers import load_acquisition
+    from murineshiftwork.readers import load_acquisition
 
     sessions = load_acquisition(_opto_acquisition_dir())
     assert len(sessions) >= 1
@@ -163,7 +163,7 @@ def test_load_acquisition_sessions_have_acquisition_name():
 
 
 def test_load_acquisition_sessions_sorted():
-    from msw_io.readers import load_acquisition
+    from murineshiftwork.readers import load_acquisition
 
     sessions = load_acquisition(_opto_acquisition_dir())
     datetimes = [s.datetime_str for s in sessions]
@@ -174,7 +174,7 @@ def test_load_acquisition_uses_manifest_basename_key(tmp_path):
     """acquisition_manifest.yaml with 'basename' key is read correctly."""
     import yaml
 
-    from msw_io.readers import load_acquisition
+    from murineshiftwork.readers import load_acquisition
 
     # Build a minimal session container with a real acquisition dir inside
     session_basename = "_test_subject__20260527_133053_901389__optotagging"
@@ -203,7 +203,7 @@ def test_load_acquisition_manifest_session_dir_key_backward_compat(tmp_path):
     """acquisition_manifest.yaml with legacy 'session_dir' key is still read."""
     import yaml
 
-    from msw_io.readers import load_acquisition
+    from murineshiftwork.readers import load_acquisition
 
     session_basename = "_test_subject__20260527_133053_901389__optotagging"
     acq_dir = tmp_path
@@ -228,7 +228,7 @@ def test_load_acquisition_manifest_session_dir_key_backward_compat(tmp_path):
 
 
 def test_load_subject_2level_returns_sessions(tmp_path):
-    from msw_io.readers import load_subject
+    from murineshiftwork.readers import load_subject
 
     # legacy backward compat: old standalone data without a session container
     session_basename = (
@@ -241,7 +241,7 @@ def test_load_subject_2level_returns_sessions(tmp_path):
 
 
 def test_load_subject_3level_returns_sessions(tmp_path):
-    from msw_io.readers import load_subject
+    from murineshiftwork.readers import load_subject
 
     # current layout: subject_dir / session_container / acquisition_dir /
     acq_name = "_test_oe_controller__20260527_132639__ephys"
@@ -258,7 +258,7 @@ def test_load_subject_3level_returns_sessions(tmp_path):
 
 
 def test_load_subject_3level_sets_acquisition_context(tmp_path):
-    from msw_io.readers import load_subject
+    from murineshiftwork.readers import load_subject
 
     acq_name = "_test_oe_controller__20260527_132639__ephys"
     session_basename = "_test_subject__20260527_133053_901389__optotagging"
@@ -273,7 +273,7 @@ def test_load_subject_3level_sets_acquisition_context(tmp_path):
 
 def test_load_subject_3level_standalone_session_prefix(tmp_path):
     """Standalone sessions use a session_ prefix container — must load as 3-level."""
-    from msw_io.readers import load_subject
+    from murineshiftwork.readers import load_subject
 
     # fixture_jsonl basename: subject001__20260508_172956_258756__probabilistic_switching_fixedsubjects
     acq_basename = (
@@ -293,7 +293,7 @@ def test_load_subject_3level_standalone_session_prefix(tmp_path):
 
 def test_load_subject_mixed_depths_includes_standalone_session_prefix(tmp_path):
     """2-level legacy dir alongside a standalone session_ prefix 3-level container."""
-    from msw_io.readers import load_subject
+    from murineshiftwork.readers import load_subject
 
     # 2-level legacy: another subject dir with .msw. files directly
     s2 = "subject001__20260508_172956_258756__probabilistic_switching_fixedsubjects"
@@ -317,7 +317,7 @@ def test_load_subject_mixed_depths_includes_standalone_session_prefix(tmp_path):
 
 
 def test_load_subject_mixed_depths(tmp_path):
-    from msw_io.readers import load_subject
+    from murineshiftwork.readers import load_subject
 
     # legacy 2-level standalone alongside current 3-level host-linked session
     s2 = "subject001__20260508_172956_258756__probabilistic_switching_fixedsubjects"

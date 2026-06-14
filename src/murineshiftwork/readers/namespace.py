@@ -1,7 +1,7 @@
 import logging
 from pathlib import Path
 
-from msw_io.namespace.msw_files import is_msw_file
+from murineshiftwork.namespace.msw_files import is_msw_file
 
 # ---------------------------------------------------------------------------
 # Artifact format constants
@@ -96,7 +96,7 @@ def detect_artifact_format(session_dir: Path) -> str:
 
 def detect_session_format(session_dir: Path) -> dict:
     """Detect namespace version and artifact format for a session directory."""
-    from msw_io.namespace.paths import parse_session_basename
+    from murineshiftwork.namespace.paths import parse_session_basename
 
     session_dir = Path(session_dir)
     artifact_format = detect_artifact_format(session_dir)
@@ -121,7 +121,7 @@ def detect_session_format(session_dir: Path) -> dict:
 
 def validate_session_namespace(session_dir: Path) -> dict:
     """Validate that the session basename conforms to the MSW namespace spec."""
-    from msw_io.namespace.paths import parse_session_basename
+    from murineshiftwork.namespace.paths import parse_session_basename
 
     session_dir = Path(session_dir)
     basename = _infer_session_basename(session_dir) or session_dir.name

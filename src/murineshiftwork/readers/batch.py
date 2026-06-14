@@ -13,15 +13,15 @@ from pathlib import Path
 
 import yaml
 
-from msw_io.readers.models import MswSession
-from msw_io.readers.session import read_session_data
+from murineshiftwork.readers.models import MswSession
+from murineshiftwork.readers.session import read_session_data
 
 log = logging.getLogger(__name__)
 
 
 def _parse_identity(session_dir: Path) -> dict:
-    from msw_io.namespace.paths import parse_session_basename
-    from msw_io.readers.namespace import _infer_session_basename
+    from murineshiftwork.namespace.paths import parse_session_basename
+    from murineshiftwork.readers.namespace import _infer_session_basename
 
     basename = _infer_session_basename(session_dir) or session_dir.name
     try:
@@ -106,7 +106,7 @@ def load_acquisition(acquisition_dir) -> list[MswSession]:
 
 
 def _has_session_files(directory: Path) -> bool:
-    from msw_io.readers.namespace import test_is_recognized_msw_file
+    from murineshiftwork.readers.namespace import test_is_recognized_msw_file
 
     try:
         return any(

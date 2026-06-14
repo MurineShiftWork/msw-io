@@ -12,8 +12,8 @@ from pathlib import Path
 
 import pytest
 
-from msw_io.namespace.paths import NAMESPACE_LEGACY, NAMESPACE_V1
-from msw_io.readers.namespace import (
+from murineshiftwork.namespace.paths import NAMESPACE_LEGACY, NAMESPACE_V1
+from murineshiftwork.readers.namespace import (
     ARTIFACT_FORMAT_LEGACY,
     ARTIFACT_FORMAT_SEPARATE_JSON,
     ARTIFACT_FORMAT_SESSION_YAML,

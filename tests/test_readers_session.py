@@ -1,4 +1,4 @@
-"""Tests for msw_io.readers.session — _PermissiveLoader and read_session_data."""
+"""Tests for murineshiftwork.readers.session — _PermissiveLoader and read_session_data."""
 
 from __future__ import annotations
 
@@ -27,21 +27,21 @@ def test_safe_load_raises_on_python_name_tag():
 
 
 def test_permissive_loader_does_not_raise():
-    from msw_io.readers.session import _PermissiveLoader
+    from murineshiftwork.readers.session import _PermissiveLoader
 
     data = yaml.load(_PYTHON_NAME_YAML, Loader=_PermissiveLoader)
     assert isinstance(data, dict)
 
 
 def test_permissive_loader_maps_python_name_to_none():
-    from msw_io.readers.session import _PermissiveLoader
+    from murineshiftwork.readers.session import _PermissiveLoader
 
     data = yaml.load(_PYTHON_NAME_YAML, Loader=_PermissiveLoader)
     assert data["task_settings"]["valve_s_for_ul"] is None
 
 
 def test_permissive_loader_preserves_other_keys():
-    from msw_io.readers.session import _PermissiveLoader
+    from murineshiftwork.readers.session import _PermissiveLoader
 
     data = yaml.load(_PYTHON_NAME_YAML, Loader=_PermissiveLoader)
     assert data["task_settings"]["other_key"] == "hello"
@@ -50,7 +50,7 @@ def test_permissive_loader_preserves_other_keys():
 
 
 def test_permissive_loader_safe_for_normal_yaml():
-    from msw_io.readers.session import _PermissiveLoader
+    from murineshiftwork.readers.session import _PermissiveLoader
 
     normal = "msw_format_version: 2\nprocess:\n  task: sequence\n"
     data = yaml.load(normal, Loader=_PermissiveLoader)
@@ -62,7 +62,7 @@ def test_permissive_loader_safe_for_normal_yaml():
 
 
 def test_reader_loads_session_yaml_with_python_name_tag(tmp_path):
-    from msw_io.readers import load_session
+    from murineshiftwork.readers import load_session
 
     session_basename = "_test_subject__20260101_120000_000001__optotagging"
     session_dir = tmp_path / session_basename

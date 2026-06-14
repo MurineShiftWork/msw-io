@@ -52,7 +52,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from ttl_barcoder.core.config import BarcodeConfig
 
-from msw_io.readers.alignment import (
+from murineshiftwork.readers.alignment import (
     align_session_to_ephys,
     decode_ephys_barcodes,
 )

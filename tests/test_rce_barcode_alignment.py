@@ -38,7 +38,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from ttl_barcoder.core.config import BarcodeConfig
 
-from msw_io.readers.alignment import verify_rpi_barcode_decoding
+from murineshiftwork.readers.alignment import verify_rpi_barcode_decoding
 
 
 def find_ttl_in(session_dir: Path) -> Path | None:

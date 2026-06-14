@@ -40,10 +40,10 @@ source = "vcs"
 fallback-version = "0.1.0"
 
 [tool.hatch.build.hooks.vcs]
-version-file = "src/msw_io/_version.py"
+version-file = "src/murineshiftwork/_version.py"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/msw_io"]
+packages = ["src/murineshiftwork"]
 
 # ---------------------------------------------------------------------------
 # Pytest
@@ -51,7 +51,7 @@ packages = ["src/msw_io"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "--cov=src/msw_io --durations=0"
+addopts = "--cov=src/murineshiftwork --durations=0"
 
 # ---------------------------------------------------------------------------
 # Ruff
