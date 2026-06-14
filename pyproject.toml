@@ -11,7 +11,7 @@ license = { file = "LICENSE" }
 authors = [
     { name = "Lars B. Rollik", email = "lars@rollik.me" },
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
     "acquisition-namespace>=1.2.2",
     "ttl-barcoder>=0.4.1",
@@ -78,7 +78,7 @@ docstring-code-format = true
 # ---------------------------------------------------------------------------
 
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.11"
 warn_return_any = false
 ignore_missing_imports = true
 
