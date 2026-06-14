@@ -1,0 +1,3531 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Murine Shift Work session data IO: file codec, namespace utilities, and session readers.">
+      
+      
+      
+        <link rel="canonical" href="https://murineshiftwork.github.io/msw-io/api/">
+      
+      
+        <link rel="prev" href="../concepts/">
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>API reference - msw-io</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="teal">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#api-reference" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="msw-io" class="md-header__button md-logo" aria-label="msw-io" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            msw-io
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              API reference
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/murineshiftwork/msw-io" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    murineshiftwork/msw-io
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="msw-io" class="md-nav__button md-logo" aria-label="msw-io" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    msw-io
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/murineshiftwork/msw-io" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    murineshiftwork/msw-io
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting_started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../concepts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Concepts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API reference
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#session-readers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Session readers
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Session readers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#batch-loading" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Batch loading
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.batch.load_session" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        load_session
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.batch.load_acquisition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        load_acquisition
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.batch.load_subject" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        load_subject
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="load_subject">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#session-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Session model
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MswSession
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="MswSession">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession.acquisition_dir" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        acquisition_dir
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession.acquisition_name" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        acquisition_name
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession.artifact_format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        artifact_format
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession.basename" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        basename
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession.datetime_str" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        datetime_str
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession.df" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        df
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession.host_session_name" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        host_session_name
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession.is_complete" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        is_complete
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession.is_ephys" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        is_ephys
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession.model_config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        model_config
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession.msw_version" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        msw_version
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession.namespace_version" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        namespace_version
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession.session_dir" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        session_dir
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession.settings_ephys" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        settings_ephys
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession.settings_process" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        settings_process
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession.settings_stage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        settings_stage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession.settings_task" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        settings_task
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession.subject" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        subject
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession.subprotocols" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        subprotocols
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession.task" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        task
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession.to_dict" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        to_dict
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Validation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.validate.ValidationResult" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ValidationResult
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ValidationResult">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.validate.ValidationResult.info" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        info
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.validate.ValidationResult.issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        issues
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.validate.ValidationResult.msw_version" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        msw_version
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.validate.ValidationResult.passed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        passed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.validate.ValidationResult.session_dir" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        session_dir
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.validate.ValidationResult.warnings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        warnings
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.validate.ValidationResult.__init__" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        __init__
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.validate.ValidationResult._fail" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        _fail
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.validate.ValidationResult._info" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        _info
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.validate.ValidationResult._warn" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        _warn
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.validate.ValidationResult.print_summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        print_summary
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.validate.validate_session" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        validate_session
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="validate_session">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#low-level-reader" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Low-level reader
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.session.read_session_data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        read_session_data
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#namespace-utilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Namespace utilities
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#murineshiftwork.namespace.paths.generate_session_paths" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        generate_session_paths
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#murineshiftwork.namespace.paths.parse_session_basename" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        parse_session_basename
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#io-codec" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        IO codec
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#murineshiftwork.io.save_trial_data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        save_trial_data
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#murineshiftwork.io.load_trial_data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        load_trial_data
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#session-readers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Session readers
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Session readers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#batch-loading" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Batch loading
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.batch.load_session" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        load_session
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.batch.load_acquisition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        load_acquisition
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.batch.load_subject" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        load_subject
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="load_subject">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#session-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Session model
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MswSession
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="MswSession">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession.acquisition_dir" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        acquisition_dir
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession.acquisition_name" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        acquisition_name
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession.artifact_format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        artifact_format
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession.basename" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        basename
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession.datetime_str" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        datetime_str
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession.df" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        df
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession.host_session_name" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        host_session_name
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession.is_complete" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        is_complete
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession.is_ephys" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        is_ephys
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession.model_config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        model_config
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession.msw_version" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        msw_version
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession.namespace_version" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        namespace_version
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession.session_dir" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        session_dir
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession.settings_ephys" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        settings_ephys
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession.settings_process" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        settings_process
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession.settings_stage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        settings_stage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession.settings_task" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        settings_task
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession.subject" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        subject
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession.subprotocols" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        subprotocols
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession.task" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        task
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession.to_dict" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        to_dict
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Validation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.validate.ValidationResult" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ValidationResult
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ValidationResult">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.validate.ValidationResult.info" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        info
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.validate.ValidationResult.issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        issues
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.validate.ValidationResult.msw_version" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        msw_version
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.validate.ValidationResult.passed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        passed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.validate.ValidationResult.session_dir" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        session_dir
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.validate.ValidationResult.warnings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        warnings
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.validate.ValidationResult.__init__" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        __init__
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.validate.ValidationResult._fail" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        _fail
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.validate.ValidationResult._info" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        _info
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.validate.ValidationResult._warn" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        _warn
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.validate.ValidationResult.print_summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        print_summary
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.validate.validate_session" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        validate_session
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="validate_session">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#low-level-reader" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Low-level reader
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.session.read_session_data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        read_session_data
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#namespace-utilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Namespace utilities
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#murineshiftwork.namespace.paths.generate_session_paths" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        generate_session_paths
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#murineshiftwork.namespace.paths.parse_session_basename" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        parse_session_basename
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#io-codec" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        IO codec
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#murineshiftwork.io.save_trial_data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        save_trial_data
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#murineshiftwork.io.load_trial_data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        load_trial_data
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="api-reference">API Reference<a class="headerlink" href="#api-reference" title="Permanent link">&para;</a></h1>
+<h2 id="session-readers">Session readers<a class="headerlink" href="#session-readers" title="Permanent link">&para;</a></h2>
+<h3 id="batch-loading">Batch loading<a class="headerlink" href="#batch-loading" title="Permanent link">&para;</a></h3>
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="murineshiftwork.readers.batch.load_session" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">murineshiftwork</span><span class="o">.</span><span class="n">readers</span><span class="o">.</span><span class="n">batch</span><span class="o">.</span><span class="n">load_session</span><span class="p">(</span><span class="n">session_dir</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">acquisition_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">acquisition_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#murineshiftwork.readers.batch.load_session" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents first">
+
+        <p>Read one session directory and return a structured MswSession.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>session_dir</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Path to the session directory (the innermost directory
+containing MSW artifact files).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>acquisition_name</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional name of the parent acquisition container.
+Set automatically by <code>load_acquisition</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>acquisition_dir</code>
+            </td>
+            <td>
+                  <code><span title="pathlib.Path">Path</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional path to the parent acquisition container.
+Set automatically by <code>load_acquisition</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="murineshiftwork.readers.models.MswSession" href="#murineshiftwork.readers.models.MswSession">MswSession</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Populated <code>MswSession</code> with all available artifacts loaded.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="ValueError">ValueError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If no recognised MSW files are found in <code>session_dir</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="murineshiftwork.readers.batch.load_acquisition" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">murineshiftwork</span><span class="o">.</span><span class="n">readers</span><span class="o">.</span><span class="n">batch</span><span class="o">.</span><span class="n">load_acquisition</span><span class="p">(</span><span class="n">acquisition_dir</span><span class="p">)</span></code>
+
+<a href="#murineshiftwork.readers.batch.load_acquisition" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents first">
+
+        <p>Load all sessions inside a single acquisition container directory.</p>
+<p>Reads <code>acquisition_manifest.yaml</code> if present; otherwise discovers
+session directories by name pattern (<code>__</code> separator).  Sessions are
+returned sorted by <code>datetime_str</code>.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>acquisition_dir</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Path to the acquisition container (a directory whose
+children are individual session directories).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="list">list</span>[<a class="autorefs autorefs-internal" title="murineshiftwork.readers.models.MswSession" href="#murineshiftwork.readers.models.MswSession">MswSession</a>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>List of <code>MswSession</code> objects, sorted chronologically.  Directories</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="list">list</span>[<a class="autorefs autorefs-internal" title="murineshiftwork.readers.models.MswSession" href="#murineshiftwork.readers.models.MswSession">MswSession</a>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>that cannot be parsed are logged and skipped.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="murineshiftwork.readers.batch.load_subject" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">murineshiftwork</span><span class="o">.</span><span class="n">readers</span><span class="o">.</span><span class="n">batch</span><span class="o">.</span><span class="n">load_subject</span><span class="p">(</span><span class="n">subject_dir</span><span class="p">)</span></code>
+
+<a href="#murineshiftwork.readers.batch.load_subject" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents first">
+
+        <p>Load all sessions under a subject directory.</p>
+<p>Walks one level of subdirectories.  Direct session directories (containing
+MSW artifact files) are loaded with <code>load_session</code>; subdirectories that
+look like acquisition containers are loaded with <code>load_acquisition</code>.
+Sessions are returned sorted by <code>datetime_str</code>.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>subject_dir</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Path to the subject root directory.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="list">list</span>[<a class="autorefs autorefs-internal" title="murineshiftwork.readers.models.MswSession" href="#murineshiftwork.readers.models.MswSession">MswSession</a>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>List of <code>MswSession</code> objects across all acquisitions, sorted</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="list">list</span>[<a class="autorefs autorefs-internal" title="murineshiftwork.readers.models.MswSession" href="#murineshiftwork.readers.models.MswSession">MswSession</a>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>chronologically.  Unreadable directories are logged and skipped.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div><h3 id="session-model">Session model<a class="headerlink" href="#session-model" title="Permanent link">&para;</a></h3>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="murineshiftwork.readers.models.MswSession" class="doc doc-heading">
+            <code>murineshiftwork.readers.models.MswSession</code>
+
+
+<a href="#murineshiftwork.readers.models.MswSession" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="pydantic.BaseModel">BaseModel</span></code></p>
+
+
+
+        <p>All data and metadata for one MSW session directory.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="session_dir
+
+  
+      instance-attribute
+   (murineshiftwork.readers.models.MswSession.session_dir)" href="#murineshiftwork.readers.models.MswSession.session_dir">session_dir</a></code></td>
+            <td>
+                  <code><span title="pathlib.Path">Path</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Absolute path to the session directory.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="basename
+
+  
+      instance-attribute
+   (murineshiftwork.readers.models.MswSession.basename)" href="#murineshiftwork.readers.models.MswSession.basename">basename</a></code></td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Session basename (<code>subject__datetime__task</code>).</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="subject
+
+  
+      instance-attribute
+   (murineshiftwork.readers.models.MswSession.subject)" href="#murineshiftwork.readers.models.MswSession.subject">subject</a></code></td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Animal identifier extracted from the basename.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="datetime_str
+
+  
+      instance-attribute
+   (murineshiftwork.readers.models.MswSession.datetime_str)" href="#murineshiftwork.readers.models.MswSession.datetime_str">datetime_str</a></code></td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Raw datetime string extracted from the basename.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="task
+
+  
+      instance-attribute
+   (murineshiftwork.readers.models.MswSession.task)" href="#murineshiftwork.readers.models.MswSession.task">task</a></code></td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Task name extracted from the basename.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="namespace_version
+
+  
+      instance-attribute
+   (murineshiftwork.readers.models.MswSession.namespace_version)" href="#murineshiftwork.readers.models.MswSession.namespace_version">namespace_version</a></code></td>
+            <td>
+                  <code><span title="str">str</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Namespace version string (<code>"v1"</code> or <code>"legacy"</code>),
+or <code>None</code> if the directory name is not a canonical basename.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="artifact_format
+
+  
+      instance-attribute
+   (murineshiftwork.readers.models.MswSession.artifact_format)" href="#murineshiftwork.readers.models.MswSession.artifact_format">artifact_format</a></code></td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>One of <code>"session_yaml"</code>, <code>"separate_json"</code>,
+or <code>"legacy"</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="msw_version
+
+  
+      instance-attribute
+   (murineshiftwork.readers.models.MswSession.msw_version)" href="#murineshiftwork.readers.models.MswSession.msw_version">msw_version</a></code></td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>MSW software version recorded in <code>settings.process</code>,
+or <code>"legacy"</code> / <code>"&lt; 1.0.0"</code> for older sessions.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="df = None
+
+  
+      class-attribute
+      instance-attribute
+   (murineshiftwork.readers.models.MswSession.df)" href="#murineshiftwork.readers.models.MswSession.df">df</a></code></td>
+            <td>
+                  <code><span title="pandas.DataFrame">DataFrame</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Trial-by-trial DataFrame, or <code>None</code> if no trial data file
+was found.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="settings_task = None
+
+  
+      class-attribute
+      instance-attribute
+   (murineshiftwork.readers.models.MswSession.settings_task)" href="#murineshiftwork.readers.models.MswSession.settings_task">settings_task</a></code></td>
+            <td>
+                  <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>] | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Task settings dict (<code>settings.task</code> artifact).</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="settings_process = None
+
+  
+      class-attribute
+      instance-attribute
+   (murineshiftwork.readers.models.MswSession.settings_process)" href="#murineshiftwork.readers.models.MswSession.settings_process">settings_process</a></code></td>
+            <td>
+                  <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>] | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Process settings dict (<code>settings.process</code> artifact).</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="settings_stage = None
+
+  
+      class-attribute
+      instance-attribute
+   (murineshiftwork.readers.models.MswSession.settings_stage)" href="#murineshiftwork.readers.models.MswSession.settings_stage">settings_stage</a></code></td>
+            <td>
+                  <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>] | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Stage / reward settings dict, if present.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="settings_ephys = None
+
+  
+      class-attribute
+      instance-attribute
+   (murineshiftwork.readers.models.MswSession.settings_ephys)" href="#murineshiftwork.readers.models.MswSession.settings_ephys">settings_ephys</a></code></td>
+            <td>
+                  <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>] | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Host-session / ephys linking block, if present.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="subprotocols = None
+
+  
+      class-attribute
+      instance-attribute
+   (murineshiftwork.readers.models.MswSession.subprotocols)" href="#murineshiftwork.readers.models.MswSession.subprotocols">subprotocols</a></code></td>
+            <td>
+                  <code><span title="list">list</span>[<span title="dict">dict</span>] | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>List of subprotocol dicts from <code>session_manifest.yaml</code>,
+populated for multi-protocol sessions.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="is_complete
+
+  
+      instance-attribute
+   (murineshiftwork.readers.models.MswSession.is_complete)" href="#murineshiftwork.readers.models.MswSession.is_complete">is_complete</a></code></td>
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>True</code> when the required artifacts (df, settings.task,
+settings.process) are all present and non-null.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="is_ephys
+
+  
+      instance-attribute
+   (murineshiftwork.readers.models.MswSession.is_ephys)" href="#murineshiftwork.readers.models.MswSession.is_ephys">is_ephys</a></code></td>
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>True</code> when an ephys/host-session block is present.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="acquisition_name = None
+
+  
+      class-attribute
+      instance-attribute
+   (murineshiftwork.readers.models.MswSession.acquisition_name)" href="#murineshiftwork.readers.models.MswSession.acquisition_name">acquisition_name</a></code></td>
+            <td>
+                  <code><span title="str">str</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Name of the parent acquisition container, set by
+<code>load_acquisition</code>; <code>None</code> for standalone sessions.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="acquisition_dir = None
+
+  
+      class-attribute
+      instance-attribute
+   (murineshiftwork.readers.models.MswSession.acquisition_dir)" href="#murineshiftwork.readers.models.MswSession.acquisition_dir">acquisition_dir</a></code></td>
+            <td>
+                  <code><span title="pathlib.Path">Path</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Path to the parent acquisition container, set by
+<code>load_acquisition</code>; <code>None</code> for standalone sessions.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="murineshiftwork.readers.models.MswSession.acquisition_dir" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">acquisition_dir</span> <span class="o">=</span> <span class="kc">None</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#murineshiftwork.readers.models.MswSession.acquisition_dir" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="murineshiftwork.readers.models.MswSession.acquisition_name" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">acquisition_name</span> <span class="o">=</span> <span class="kc">None</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#murineshiftwork.readers.models.MswSession.acquisition_name" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="murineshiftwork.readers.models.MswSession.artifact_format" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">artifact_format</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#murineshiftwork.readers.models.MswSession.artifact_format" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="murineshiftwork.readers.models.MswSession.basename" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">basename</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#murineshiftwork.readers.models.MswSession.basename" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="murineshiftwork.readers.models.MswSession.datetime_str" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">datetime_str</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#murineshiftwork.readers.models.MswSession.datetime_str" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="murineshiftwork.readers.models.MswSession.df" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">df</span> <span class="o">=</span> <span class="kc">None</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#murineshiftwork.readers.models.MswSession.df" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="murineshiftwork.readers.models.MswSession.host_session_name" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">host_session_name</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#murineshiftwork.readers.models.MswSession.host_session_name" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Name of the host/ephys session container, or None if standalone.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="murineshiftwork.readers.models.MswSession.is_complete" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">is_complete</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#murineshiftwork.readers.models.MswSession.is_complete" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="murineshiftwork.readers.models.MswSession.is_ephys" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">is_ephys</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#murineshiftwork.readers.models.MswSession.is_ephys" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="murineshiftwork.readers.models.MswSession.model_config" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">model_config</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span><span class="n">arbitrary_types_allowed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#murineshiftwork.readers.models.MswSession.model_config" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="murineshiftwork.readers.models.MswSession.msw_version" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">msw_version</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#murineshiftwork.readers.models.MswSession.msw_version" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="murineshiftwork.readers.models.MswSession.namespace_version" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">namespace_version</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#murineshiftwork.readers.models.MswSession.namespace_version" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="murineshiftwork.readers.models.MswSession.session_dir" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">session_dir</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#murineshiftwork.readers.models.MswSession.session_dir" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="murineshiftwork.readers.models.MswSession.settings_ephys" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">settings_ephys</span> <span class="o">=</span> <span class="kc">None</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#murineshiftwork.readers.models.MswSession.settings_ephys" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="murineshiftwork.readers.models.MswSession.settings_process" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">settings_process</span> <span class="o">=</span> <span class="kc">None</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#murineshiftwork.readers.models.MswSession.settings_process" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="murineshiftwork.readers.models.MswSession.settings_stage" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">settings_stage</span> <span class="o">=</span> <span class="kc">None</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#murineshiftwork.readers.models.MswSession.settings_stage" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="murineshiftwork.readers.models.MswSession.settings_task" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">settings_task</span> <span class="o">=</span> <span class="kc">None</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#murineshiftwork.readers.models.MswSession.settings_task" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="murineshiftwork.readers.models.MswSession.subject" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">subject</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#murineshiftwork.readers.models.MswSession.subject" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="murineshiftwork.readers.models.MswSession.subprotocols" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">subprotocols</span> <span class="o">=</span> <span class="kc">None</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#murineshiftwork.readers.models.MswSession.subprotocols" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="murineshiftwork.readers.models.MswSession.task" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">task</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#murineshiftwork.readers.models.MswSession.task" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="murineshiftwork.readers.models.MswSession.to_dict" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">to_dict</span><span class="p">()</span></code>
+
+<a href="#murineshiftwork.readers.models.MswSession.to_dict" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div><h3 id="validation">Validation<a class="headerlink" href="#validation" title="Permanent link">&para;</a></h3>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="murineshiftwork.readers.validate.ValidationResult" class="doc doc-heading">
+            <code>murineshiftwork.readers.validate.ValidationResult</code>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+<a href="#murineshiftwork.readers.validate.ValidationResult" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents first">
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="murineshiftwork.readers.validate.ValidationResult.info" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">info</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#murineshiftwork.readers.validate.ValidationResult.info" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="murineshiftwork.readers.validate.ValidationResult.issues" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">issues</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#murineshiftwork.readers.validate.ValidationResult.issues" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="murineshiftwork.readers.validate.ValidationResult.msw_version" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">msw_version</span> <span class="o">=</span> <span class="s1">&#39;unknown&#39;</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#murineshiftwork.readers.validate.ValidationResult.msw_version" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="murineshiftwork.readers.validate.ValidationResult.passed" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">passed</span> <span class="o">=</span> <span class="kc">True</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#murineshiftwork.readers.validate.ValidationResult.passed" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="murineshiftwork.readers.validate.ValidationResult.session_dir" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">session_dir</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#murineshiftwork.readers.validate.ValidationResult.session_dir" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="murineshiftwork.readers.validate.ValidationResult.warnings" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">warnings</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#murineshiftwork.readers.validate.ValidationResult.warnings" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="murineshiftwork.readers.validate.ValidationResult.__init__" class="doc doc-heading">
+            <code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="n">session_dir</span><span class="p">,</span> <span class="n">msw_version</span><span class="o">=</span><span class="s1">&#39;unknown&#39;</span><span class="p">,</span> <span class="n">passed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">issues</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">warnings</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">info</span><span class="o">=</span><span class="nb">list</span><span class="p">())</span></code>
+
+<a href="#murineshiftwork.readers.validate.ValidationResult.__init__" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="murineshiftwork.readers.validate.ValidationResult._fail" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">_fail</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span></code>
+
+<a href="#murineshiftwork.readers.validate.ValidationResult._fail" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="murineshiftwork.readers.validate.ValidationResult._info" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">_info</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span></code>
+
+<a href="#murineshiftwork.readers.validate.ValidationResult._info" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="murineshiftwork.readers.validate.ValidationResult._warn" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">_warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span></code>
+
+<a href="#murineshiftwork.readers.validate.ValidationResult._warn" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="murineshiftwork.readers.validate.ValidationResult.print_summary" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">print_summary</span><span class="p">()</span></code>
+
+<a href="#murineshiftwork.readers.validate.ValidationResult.print_summary" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="murineshiftwork.readers.validate.validate_session" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">murineshiftwork</span><span class="o">.</span><span class="n">readers</span><span class="o">.</span><span class="n">validate</span><span class="o">.</span><span class="n">validate_session</span><span class="p">(</span><span class="n">session_dir</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></code>
+
+<a href="#murineshiftwork.readers.validate.validate_session" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents first">
+
+        <p>Validate MSW file completeness for a session directory.</p>
+
+
+    </div>
+
+</div><h3 id="low-level-reader">Low-level reader<a class="headerlink" href="#low-level-reader" title="Permanent link">&para;</a></h3>
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="murineshiftwork.readers.session.read_session_data" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">murineshiftwork</span><span class="o">.</span><span class="n">readers</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">read_session_data</span><span class="p">(</span><span class="n">session_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#murineshiftwork.readers.session.read_session_data" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents first">
+
+        <p>Read raw session data from a directory, dispatching on artifact format.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>session_dir</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Path to the session directory.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Dict with keys: <code>df</code>, <code>settings.task</code>, <code>settings.process</code>,</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>settings.stage</code>, <code>settings.ephys</code>, <code>msw_version</code>,</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>namespace_version</code>, <code>artifact_format</code>, <code>is_legacy_session</code>,</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>is_complete_session</code>, <code>is_ephys_session</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="ValueError">ValueError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If no registered reader handles the detected artifact format.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="AssertionError">AssertionError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If <code>session_dir</code> does not exist.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div><hr />
+<h2 id="namespace-utilities">Namespace utilities<a class="headerlink" href="#namespace-utilities" title="Permanent link">&para;</a></h2>
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="murineshiftwork.namespace.paths.generate_session_paths" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">murineshiftwork</span><span class="o">.</span><span class="n">namespace</span><span class="o">.</span><span class="n">paths</span><span class="o">.</span><span class="n">generate_session_paths</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">basepath</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="n">CURRENT_NAMESPACE_VERSION</span><span class="p">,</span> <span class="n">default_subject</span><span class="o">=</span><span class="s1">&#39;_test_subject&#39;</span><span class="p">,</span> <span class="n">linked_to</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">printout</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></code>
+
+<a href="#murineshiftwork.namespace.paths.generate_session_paths" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents first">
+
+        <p>Generate a validated session path dictionary for a given namespace version.</p>
+<p>Builds the canonical session basename (<code>subject__datetime__task</code>) and
+derives all associated paths under <code>basepath</code>.  Tasks whose name starts
+with <code>_test__</code> are redirected to <code>default_subject</code> so test runs do not
+pollute real subject directories.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>subject</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Animal/subject identifier (letters, digits, hyphens, underscores).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>task</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Task name (same character restrictions as <code>subject</code>).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>basepath</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span> | <span title="pathlib.Path">Path</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Root data directory under which subject folders live.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>version</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Namespace version — <code>"v1"</code> (default) or <code>"legacy"</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code><span title="murineshiftwork.namespace.paths.CURRENT_NAMESPACE_VERSION">CURRENT_NAMESPACE_VERSION</span></code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>default_subject</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Subject name used when task starts with <code>_test__</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;_test_subject&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>linked_to</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If provided, use this string as the host-session container
+name instead of deriving one from the task name.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>printout</code>
+            </td>
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Print the generated paths to stdout when <code>True</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code>True</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="dict">dict</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Dict with keys: <code>subject</code>, <code>datetime</code>, <code>task</code>, <code>basepath</code>,</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="dict">dict</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>namespace_version</code>, <code>host_session_name</code>, <code>acquisition_name</code>,</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="dict">dict</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>session_basename</code>, <code>session_folder</code>, <code>session_folder_relative</code>,</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="dict">dict</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>session_file_path</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="ValueError">ValueError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If <code>version</code> is not a known namespace version, or if
+<code>subject</code> or <code>task</code> contain forbidden characters.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="murineshiftwork.namespace.paths.parse_session_basename" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">murineshiftwork</span><span class="o">.</span><span class="n">namespace</span><span class="o">.</span><span class="n">paths</span><span class="o">.</span><span class="n">parse_session_basename</span><span class="p">(</span><span class="n">basename</span><span class="p">)</span></code>
+
+<a href="#murineshiftwork.namespace.paths.parse_session_basename" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents first">
+
+        <p>Parse subject, datetime, task from a session basename.</p>
+
+
+<details class="returns-dict-with-keys" open>
+  <summary>Returns dict with keys</summary>
+  <p>subject (str), datetime (datetime), datetime_str (str),
+task (str), namespace_version (str).</p>
+</details>        <p>Raises ValueError if the basename cannot be parsed.</p>
+
+
+    </div>
+
+</div><hr />
+<h2 id="io-codec">IO codec<a class="headerlink" href="#io-codec" title="Permanent link">&para;</a></h2>
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="murineshiftwork.io.save_trial_data" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">murineshiftwork</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">save_trial_data</span><span class="p">(</span><span class="n">trial_data_list</span><span class="p">,</span> <span class="n">filepath</span><span class="p">)</span></code>
+
+<a href="#murineshiftwork.io.save_trial_data" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents first">
+
+        <p>Save a list of trial dicts to a JSONL file.</p>
+<p>Overwrites any existing file.  The first line is a version header;
+subsequent lines are one JSON object per trial.  Numpy arrays are
+converted to lists; tuples are encoded as <code>{"__tuple__": [...]}</code>
+so they survive the round-trip through <code>load_trial_data</code>.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>trial_data_list</code>
+            </td>
+            <td>
+                  <code><span title="list">list</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>List of per-trial dicts as returned by the task.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>filepath</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span> | <span title="pathlib.Path">Path</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Destination path (parent directories are created if absent).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="murineshiftwork.io.load_trial_data" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">murineshiftwork</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">load_trial_data</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span></code>
+
+<a href="#murineshiftwork.io.load_trial_data" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents first">
+
+        <p>Load trial dicts from a JSONL file written by <code>save_trial_data</code>.</p>
+<p>Skips the version header line and restores <code>{"__tuple__": [...]}</code>
+sentinels back to Python tuples.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>filepath</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Path to the <code>.jsonl</code> file.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="list">list</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>List of per-trial dicts with tuples restored.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.top", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
