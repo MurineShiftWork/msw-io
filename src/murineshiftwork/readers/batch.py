@@ -42,7 +42,22 @@ def load_session(
     acquisition_name: str | None = None,
     acquisition_dir: Path | None = None,
 ) -> MswSession:
-    """Read one session directory and return a structured MswSession."""
+    """Read one session directory and return a structured MswSession.
+
+    Args:
+        session_dir: Path to the session directory (the innermost directory
+            containing MSW artifact files).
+        acquisition_name: Optional name of the parent acquisition container.
+            Set automatically by ``load_acquisition``.
+        acquisition_dir: Optional path to the parent acquisition container.
+            Set automatically by ``load_acquisition``.
+
+    Returns:
+        Populated ``MswSession`` with all available artifacts loaded.
+
+    Raises:
+        ValueError: If no recognised MSW files are found in ``session_dir``.
+    """
     session_dir = Path(session_dir)
     raw = read_session_data(session_dir)
     identity = _parse_identity(session_dir)
@@ -70,7 +85,20 @@ def load_session(
 
 
 def load_acquisition(acquisition_dir) -> list[MswSession]:
-    """Load all acquisitions inside a session container directory."""
+    """Load all sessions inside a single acquisition container directory.
+
+    Reads ``acquisition_manifest.yaml`` if present; otherwise discovers
+    session directories by name pattern (``__`` separator).  Sessions are
+    returned sorted by ``datetime_str``.
+
+    Args:
+        acquisition_dir: Path to the acquisition container (a directory whose
+            children are individual session directories).
+
+    Returns:
+        List of ``MswSession`` objects, sorted chronologically.  Directories
+        that cannot be parsed are logged and skipped.
+    """
     acquisition_dir = Path(acquisition_dir)
     acquisition_name = acquisition_dir.name
 
@@ -117,7 +145,20 @@ def _has_session_files(directory: Path) -> bool:
 
 
 def load_subject(subject_dir) -> list[MswSession]:
-    """Load all sessions under a subject directory."""
+    """Load all sessions under a subject directory.
+
+    Walks one level of subdirectories.  Direct session directories (containing
+    MSW artifact files) are loaded with ``load_session``; subdirectories that
+    look like acquisition containers are loaded with ``load_acquisition``.
+    Sessions are returned sorted by ``datetime_str``.
+
+    Args:
+        subject_dir: Path to the subject root directory.
+
+    Returns:
+        List of ``MswSession`` objects across all acquisitions, sorted
+        chronologically.  Unreadable directories are logged and skipped.
+    """
     subject_dir = Path(subject_dir)
     sessions: list[MswSession] = []
 

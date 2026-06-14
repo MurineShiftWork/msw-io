@@ -10,7 +10,36 @@ from pydantic import BaseModel, ConfigDict
 
 
 class MswSession(BaseModel):
-    """All data and metadata for one MSW session directory."""
+    """All data and metadata for one MSW session directory.
+
+    Attributes:
+        session_dir: Absolute path to the session directory.
+        basename: Session basename (``subject__datetime__task``).
+        subject: Animal identifier extracted from the basename.
+        datetime_str: Raw datetime string extracted from the basename.
+        task: Task name extracted from the basename.
+        namespace_version: Namespace version string (``"v1"`` or ``"legacy"``),
+            or ``None`` if the directory name is not a canonical basename.
+        artifact_format: One of ``"session_yaml"``, ``"separate_json"``,
+            or ``"legacy"``.
+        msw_version: MSW software version recorded in ``settings.process``,
+            or ``"legacy"`` / ``"< 1.0.0"`` for older sessions.
+        df: Trial-by-trial DataFrame, or ``None`` if no trial data file
+            was found.
+        settings_task: Task settings dict (``settings.task`` artifact).
+        settings_process: Process settings dict (``settings.process`` artifact).
+        settings_stage: Stage / reward settings dict, if present.
+        settings_ephys: Host-session / ephys linking block, if present.
+        subprotocols: List of subprotocol dicts from ``session_manifest.yaml``,
+            populated for multi-protocol sessions.
+        is_complete: ``True`` when the required artifacts (df, settings.task,
+            settings.process) are all present and non-null.
+        is_ephys: ``True`` when an ephys/host-session block is present.
+        acquisition_name: Name of the parent acquisition container, set by
+            ``load_acquisition``; ``None`` for standalone sessions.
+        acquisition_dir: Path to the parent acquisition container, set by
+            ``load_acquisition``; ``None`` for standalone sessions.
+    """
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 

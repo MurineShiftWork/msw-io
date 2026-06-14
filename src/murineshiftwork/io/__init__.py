@@ -85,7 +85,17 @@ class _NumpyEncoder(json.JSONEncoder):
 
 
 def save_trial_data(trial_data_list: list, filepath: str | Path) -> None:
-    """Save list of trial dicts to JSONL (overwrites existing file)."""
+    """Save a list of trial dicts to a JSONL file.
+
+    Overwrites any existing file.  The first line is a version header;
+    subsequent lines are one JSON object per trial.  Numpy arrays are
+    converted to lists; tuples are encoded as ``{"__tuple__": [...]}``
+    so they survive the round-trip through ``load_trial_data``.
+
+    Args:
+        trial_data_list: List of per-trial dicts as returned by the task.
+        filepath: Destination path (parent directories are created if absent).
+    """
     filepath = Path(filepath)
     filepath.parent.mkdir(parents=True, exist_ok=True)
     with filepath.open("w") as f:
@@ -99,7 +109,17 @@ def save_trial_data(trial_data_list: list, filepath: str | Path) -> None:
 
 
 def load_trial_data(filepath) -> list:
-    """Load trial dicts from JSONL file, skipping the version header."""
+    """Load trial dicts from a JSONL file written by ``save_trial_data``.
+
+    Skips the version header line and restores ``{"__tuple__": [...]}``
+    sentinels back to Python tuples.
+
+    Args:
+        filepath: Path to the ``.jsonl`` file.
+
+    Returns:
+        List of per-trial dicts with tuples restored.
+    """
     filepath = Path(filepath)
     trials = []
     with filepath.open("r") as f:

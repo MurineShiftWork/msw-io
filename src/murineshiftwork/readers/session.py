@@ -1,3 +1,11 @@
+"""Low-level session reader: format detection and artifact loading.
+
+Dispatches to one of three format readers based on what files are present:
+- ``session_yaml``: single ``.msw.session.yaml`` (current format, v2+)
+- ``separate_json``: separate ``.msw.settings.*.json`` + trial data file
+- ``legacy``: ``task_settings.py`` + ``switching.pkl/csv``
+"""
+
 import logging
 from pathlib import Path
 
@@ -173,11 +181,20 @@ _READER_DISPATCH = {
 
 
 def read_session_data(session_dir=None):
-    """Read session data, dispatching to the correct reader based on artifact format.
+    """Read raw session data from a directory, dispatching on artifact format.
 
-    Returns a dict with keys: df, settings.task, settings.process, settings.stage,
-    msw_version, namespace_version, artifact_format, is_legacy_session,
-    is_complete_session, is_ephys_session.
+    Args:
+        session_dir: Path to the session directory.
+
+    Returns:
+        Dict with keys: ``df``, ``settings.task``, ``settings.process``,
+        ``settings.stage``, ``settings.ephys``, ``msw_version``,
+        ``namespace_version``, ``artifact_format``, ``is_legacy_session``,
+        ``is_complete_session``, ``is_ephys_session``.
+
+    Raises:
+        ValueError: If no registered reader handles the detected artifact format.
+        AssertionError: If ``session_dir`` does not exist.
     """
     session_dir = Path(session_dir)
     assert session_dir.exists()
