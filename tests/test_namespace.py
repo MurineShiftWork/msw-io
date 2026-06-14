@@ -1,6 +1,6 @@
 """Unit tests for murineshiftwork.namespace.
 
-All tests use dummy scalar arguments — no CLI, no hardware, no config files.
+All tests use dummy scalar arguments: no CLI, no hardware, no config files.
 """
 
 from datetime import datetime
@@ -34,7 +34,7 @@ def test_legacy_format_has_no_microseconds():
 
 
 # ---------------------------------------------------------------------------
-# generate_session_paths — v1
+# generate_session_paths: v1
 
 
 def test_v1_basename_structure():
@@ -108,7 +108,7 @@ def test_v1_child_session_nesting():
 
 
 # ---------------------------------------------------------------------------
-# generate_session_paths — legacy
+# generate_session_paths: legacy
 
 
 def test_legacy_datetime_seconds_only():
@@ -130,7 +130,7 @@ def test_legacy_namespace_version_in_result():
 
 
 # ---------------------------------------------------------------------------
-# generate_session_paths — validation
+# generate_session_paths: validation
 
 
 def test_unknown_version_raises():
@@ -160,7 +160,7 @@ def test_test_task_uses_default_subject():
 
 
 # ---------------------------------------------------------------------------
-# build_data_paths — shim
+# build_data_paths: shim
 
 
 def test_build_data_paths_uses_current_version():
@@ -180,7 +180,7 @@ def test_build_data_paths_output_equivalent_to_generate():
 
 
 # ---------------------------------------------------------------------------
-# parse_session_basename — version detection
+# parse_session_basename: version detection
 
 
 def test_parse_v1_basename():

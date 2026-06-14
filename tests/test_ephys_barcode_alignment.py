@@ -183,7 +183,7 @@ def main():
     print(f"Decoded {len(ephys_barcodes)} barcodes from OE events\n")
 
     if not ephys_barcodes:
-        print("FAIL — no barcodes decoded. Check line number and wiring.")
+        print("FAIL: no barcodes decoded. Check line number and wiring.")
         return 1
 
     # Show a few decoded values and their recovered timestamps
@@ -215,7 +215,7 @@ def main():
             barcode_config=barcode_config,
         )
     except ValueError as e:
-        print(f"FAIL — alignment error: {e}")
+        print(f"FAIL: alignment error: {e}")
         return 1
 
     print("\n=== Alignment result ===")
@@ -259,7 +259,7 @@ def main():
     print(
         "PASS"
         if passed
-        else f"WARN — check residuals or unmatched barcodes "
+        else f"WARN: check residuals or unmatched barcodes "
         f"(matched {result['n_matched']}/{result['n_msw_barcodes']})"
     )
     return 0 if passed else 1

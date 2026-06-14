@@ -71,7 +71,7 @@ def _check_completeness(data: dict, is_legacy: bool) -> bool:
 
 
 def _read_session_yaml(session_dir: Path, fmt: dict) -> dict:
-    """ARTIFACT_FORMAT_SESSION_YAML — single .msw.session.yaml (v2+)."""
+    """ARTIFACT_FORMAT_SESSION_YAML: single .msw.session.yaml (v2+)."""
     files = _msw_files_dict(session_dir)
     data: dict = {}
 
@@ -98,7 +98,7 @@ def _read_session_yaml(session_dir: Path, fmt: dict) -> dict:
         elif Path(k).name.endswith("csv"):
             pass
         else:
-            logging.debug("session_yaml reader: unrecognised key %r — %s", k, v)
+            logging.debug("session_yaml reader: unrecognised key %r: %s", k, v)
 
     manifest_path = session_dir / "session_manifest.yaml"
     if manifest_path.exists():
@@ -124,7 +124,7 @@ def _read_session_yaml(session_dir: Path, fmt: dict) -> dict:
 
 
 def _read_separate_json(session_dir: Path, fmt: dict) -> dict:
-    """ARTIFACT_FORMAT_SEPARATE_JSON — separate .msw.settings.*.json + df file."""
+    """ARTIFACT_FORMAT_SEPARATE_JSON: separate .msw.settings.*.json + df file."""
     files = _msw_files_dict(session_dir)
     data: dict = {}
 
@@ -136,7 +136,7 @@ def _read_separate_json(session_dir: Path, fmt: dict) -> dict:
         elif k.endswith("json") and ".msw." in v:
             data[k.replace(".json", "")] = read_json(file=v)
         else:
-            logging.debug("separate_json reader: unrecognised key %r — %s", k, v)
+            logging.debug("separate_json reader: unrecognised key %r: %s", k, v)
 
     for k, v in files.items():
         if k.endswith("settings.json") and "settings.process" not in data:
@@ -148,7 +148,7 @@ def _read_separate_json(session_dir: Path, fmt: dict) -> dict:
 
 
 def _read_legacy(session_dir: Path, fmt: dict) -> dict:
-    """ARTIFACT_FORMAT_LEGACY — task_settings.py + switching.pkl/csv."""
+    """ARTIFACT_FORMAT_LEGACY: task_settings.py + switching.pkl/csv."""
     all_files = [str(p) for p in session_dir.glob("*")]
     data: dict = {}
 

@@ -1,4 +1,4 @@
-"""Tests for readers.batch — load_session / load_acquisition / load_subject."""
+"""Tests for readers.batch: load_session / load_acquisition / load_subject."""
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ def _skip_if_absent(d: Path) -> Path:
 
 
 # ---------------------------------------------------------------------------
-# load_session — fixture coverage
+# load_session: fixture coverage
 
 
 @pytest.mark.parametrize(
@@ -88,7 +88,7 @@ def test_load_session_opto_ephys_in_model():
 
 
 def test_load_session_opto_host_block_normalized_to_session_name():
-    """Old fixture uses parent_acquisition.acquisition_name — must load as session_name."""
+    """Old fixture uses parent_acquisition.acquisition_name: must load as session_name."""
     from murineshiftwork.readers import load_session
 
     d = _skip_if_absent(
@@ -138,7 +138,7 @@ def test_load_session_acquisition_context_none_by_default():
 
 
 # ---------------------------------------------------------------------------
-# load_acquisition — using the optotagging acquisition fixture
+# load_acquisition: using the optotagging acquisition fixture
 
 
 def _opto_acquisition_dir():
@@ -224,7 +224,7 @@ def test_load_acquisition_manifest_session_dir_key_backward_compat(tmp_path):
 
 
 # ---------------------------------------------------------------------------
-# load_subject — 2-level (legacy) and 3-level (current) directory layouts
+# load_subject: 2-level (legacy) and 3-level (current) directory layouts
 
 
 def test_load_subject_2level_returns_sessions(tmp_path):
@@ -272,7 +272,7 @@ def test_load_subject_3level_sets_acquisition_context(tmp_path):
 
 
 def test_load_subject_3level_standalone_session_prefix(tmp_path):
-    """Standalone sessions use a session_ prefix container — must load as 3-level."""
+    """Standalone sessions use a session_ prefix container: must load as 3-level."""
     from murineshiftwork.readers import load_subject
 
     # fixture_jsonl basename: subject001__20260508_172956_258756__probabilistic_switching_fixedsubjects

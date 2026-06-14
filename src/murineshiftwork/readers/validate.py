@@ -70,7 +70,7 @@ def _check_msw_completeness(session_dir: Path, result: ValidationResult) -> dict
             for k in ("df", "settings.task", "settings.process")
             if k not in sd or sd[k] is None
         ]
-        result._fail(f"Incomplete MSW session — missing or null: {missing}")
+        result._fail(f"Incomplete MSW session: missing or null: {missing}")
     else:
         result._info(f"MSW files complete (version={result.msw_version})")
 

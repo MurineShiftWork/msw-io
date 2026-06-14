@@ -32,7 +32,7 @@ def test_msw_yaml_loads_correctly():
 
 
 # ---------------------------------------------------------------------------
-# get_msw_builder() — lazy singleton
+# get_msw_builder(): lazy singleton
 
 
 def test_get_msw_builder_returns_builder():

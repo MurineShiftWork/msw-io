@@ -7,7 +7,7 @@ and match the MSW session data.
 
 Usage
 -----
-# Minimal — auto-discovers ttl_in.npz from session dir:
+# Minimal: auto-discovers ttl_in.npz from session dir:
 python test_rce_barcode_alignment.py --session /data/subject/session_dir
 
 # Explicit paths:
@@ -47,7 +47,7 @@ def find_ttl_in(session_dir: Path) -> Path | None:
     if len(hits) == 1:
         return Path(hits[0])
     if len(hits) > 1:
-        print("Multiple ttl_in.npz found — specify with --ttl_in:")
+        print("Multiple ttl_in.npz found: specify with --ttl_in:")
         for h in hits:
             print(f"  {h}")
     return None
@@ -157,7 +157,7 @@ def main():
 
     print()
     passed = result["match_rate"] == 1.0 and result["decode_rate"] == 1.0
-    print("PASS" if passed else "FAIL — check unmatched values above")
+    print("PASS" if passed else "FAIL: check unmatched values above")
     return 0 if passed else 1
 
 

@@ -1,4 +1,4 @@
-"""Tests for murineshiftwork.readers.session — _PermissiveLoader and read_session_data."""
+"""Tests for murineshiftwork.readers.session: _PermissiveLoader and read_session_data."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ import pytest
 import yaml
 
 # ---------------------------------------------------------------------------
-# _PermissiveLoader — historical YAML read tolerance
+# _PermissiveLoader: historical YAML read tolerance
 
 _PYTHON_NAME_YAML = """\
 msw_format_version: 2

@@ -84,7 +84,7 @@ def test_completeness_passes_without_raw_key():
 
 
 # ---------------------------------------------------------------------------
-# read_session_data() — format metadata always present in output
+# read_session_data(): format metadata always present in output
 
 
 @pytest.mark.parametrize(
