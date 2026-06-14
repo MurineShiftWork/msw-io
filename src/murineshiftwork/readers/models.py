@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from pathlib import Path  # noqa: TC003: pydantic validates Path fields at runtime
+from pathlib import Path  # noqa: TC003  # pydantic validates Path fields at runtime
 from typing import Any
 
-import pandas as pd  # noqa: TC002: pydantic validates pd.DataFrame at runtime
+import pandas as pd  # noqa: TC002  # pydantic validates pd.DataFrame at runtime
 from pydantic import BaseModel, ConfigDict
 
 
