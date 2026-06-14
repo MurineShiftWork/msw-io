@@ -1,3 +1,13 @@
+"""MSW session namespace: path generation and basename parsing.
+
+The MSW namespace encodes subject identity, datetime, and task into a
+canonical basename: ``{subject}__{datetime}__{task}``.  Two datetime
+precisions are supported:
+
+- ``v1`` (current): microsecond precision — ``20260514_143022_123456``
+- ``legacy``: second precision — ``20210718_152153``
+"""
+
 from __future__ import annotations
 
 import re
@@ -110,7 +120,33 @@ def generate_session_paths(
     linked_to: str | None = None,
     printout: bool = True,
 ) -> dict:
-    """Generate validated session path dict for a given namespace version."""
+    """Generate a validated session path dictionary for a given namespace version.
+
+    Builds the canonical session basename (``subject__datetime__task``) and
+    derives all associated paths under ``basepath``.  Tasks whose name starts
+    with ``_test__`` are redirected to ``default_subject`` so test runs do not
+    pollute real subject directories.
+
+    Args:
+        subject: Animal/subject identifier (letters, digits, hyphens, underscores).
+        task: Task name (same character restrictions as ``subject``).
+        basepath: Root data directory under which subject folders live.
+        version: Namespace version — ``"v1"`` (default) or ``"legacy"``.
+        default_subject: Subject name used when task starts with ``_test__``.
+        linked_to: If provided, use this string as the host-session container
+            name instead of deriving one from the task name.
+        printout: Print the generated paths to stdout when ``True``.
+
+    Returns:
+        Dict with keys: ``subject``, ``datetime``, ``task``, ``basepath``,
+        ``namespace_version``, ``host_session_name``, ``acquisition_name``,
+        ``session_basename``, ``session_folder``, ``session_folder_relative``,
+        ``session_file_path``.
+
+    Raises:
+        ValueError: If ``version`` is not a known namespace version, or if
+            ``subject`` or ``task`` contain forbidden characters.
+    """
     if version not in _NAMESPACE_FORMATS:
         raise ValueError(
             f"Unknown namespace version {version!r}. "
