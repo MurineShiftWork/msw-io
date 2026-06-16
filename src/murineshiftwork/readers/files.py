@@ -1,7 +1,7 @@
+import importlib.util
 import json
 import logging
 import subprocess
-from importlib.machinery import SourceFileLoader
 from pathlib import Path
 
 import pandas as pd
@@ -19,7 +19,9 @@ def _exec_sys_cmd(cmd=None, shell=True, stdout=subprocess.PIPE):
 
 
 def read_settings_py(file=None):
-    tmp_module = SourceFileLoader(Path(file).stem, str(file)).load_module()
+    spec = importlib.util.spec_from_file_location(Path(file).stem, str(file))
+    tmp_module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(tmp_module)
     module_vars = {k: v for k, v in vars(tmp_module).items() if not k.startswith("__")}
     return module_vars
 
