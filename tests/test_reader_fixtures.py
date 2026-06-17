@@ -416,9 +416,7 @@ def _v4_session_dir():
 def test_v4_fixture_basename_parses_as_known_acq_type():
     from murineshiftwork.namespace.paths import parse_acquisition_basename
 
-    info = parse_acquisition_basename(
-        "_test_subject__20260617_143022_000001__msw"
-    )
+    info = parse_acquisition_basename("_test_subject__20260617_143022_000001__msw")
     assert info["acq_type"] == "msw"
     assert info["is_legacy_acquisition"] is False
     assert info["subject"] == "_test_subject"

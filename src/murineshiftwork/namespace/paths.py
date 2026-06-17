@@ -92,9 +92,7 @@ def _parse_datetime(dt_str: str) -> tuple[datetime, str]:
             return datetime.strptime(dt_str, _NAMESPACE_FORMATS[version]), version
         except ValueError:
             continue
-    raise ValueError(
-        f"Cannot parse datetime {dt_str!r}. Tried: {_PARSE_ORDER}"
-    )
+    raise ValueError(f"Cannot parse datetime {dt_str!r}. Tried: {_PARSE_ORDER}")
 
 
 def parse_acquisition_basename(basename: str) -> dict:
@@ -253,7 +251,11 @@ def generate_session_paths(
 
     _validate_path_component(subject, "Subject name")
 
-    dt = datetime_str if datetime_str is not None else datetime.now().strftime(_NAMESPACE_FORMATS[version])
+    dt = (
+        datetime_str
+        if datetime_str is not None
+        else datetime.now().strftime(_NAMESPACE_FORMATS[version])
+    )
 
     # --- Session container ---
     if linked_to:
