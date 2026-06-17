@@ -228,11 +228,10 @@ def generate_session_paths(
             ``"legacy"``.
         default_subject: Subject name used when task starts with ``_test__``.
         linked_to: Override the entire session container name verbatim.
-            When set, the datetime is automatically extracted from the
-            container name so sibling acquisitions share the same timestamp.
-        datetime_str: Explicit datetime string override.  Only needed when
-            the desired datetime cannot be derived from ``linked_to`` (e.g.
-            the container name follows a non-standard format).
+        datetime_str: Re-use an existing datetime string instead of generating
+            a new one.  Pass ``session_paths["datetime"]`` from the primary
+            acquisition when creating a sibling (e.g. ``video_flir``) so both
+            basenames share the same timestamp.
         printout: Print generated paths to stdout.
 
     Returns:
@@ -254,15 +253,7 @@ def generate_session_paths(
 
     _validate_path_component(subject, "Subject name")
 
-    if datetime_str is not None:
-        dt = datetime_str
-    elif linked_to:
-        # Extract datetime from container name (subject__dt[__session_type])
-        # so sibling acquisitions share the same timestamp.
-        parts = linked_to.split("__")
-        dt = parts[1] if len(parts) >= 2 else datetime.now().strftime(_NAMESPACE_FORMATS[version])
-    else:
-        dt = datetime.now().strftime(_NAMESPACE_FORMATS[version])
+    dt = datetime_str if datetime_str is not None else datetime.now().strftime(_NAMESPACE_FORMATS[version])
 
     # --- Session container ---
     if linked_to:

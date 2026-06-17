@@ -106,38 +106,27 @@ def test_v1_child_session_nesting():
     assert paths["session_folder"].startswith(f"/data/mouse_01/{parent}/")
 
 
-def test_linked_to_datetime_auto_extracted():
-    # When linked_to is set, the sibling acquisition basename must share the
-    # same datetime as the container (subject__dt), not a freshly generated one.
-    container = "mouse_01__20260617_143022_000001"
-    paths = generate_session_paths(
+def test_sibling_acquisition_shares_datetime_via_datetime_str():
+    # To create a sibling acquisition (e.g. video_flir), the caller passes
+    # session_paths["datetime"] from the primary acquisition. No string splitting
+    # anywhere - the datetime comes from the builder's own output dict.
+    msw_paths = generate_session_paths(
+        "mouse_01", "task", "/data", version=NAMESPACE_V1, printout=False
+    )
+    video_paths = generate_session_paths(
         "mouse_01",
         "task",
         "/data",
         acq_type="video_flir",
         version=NAMESPACE_V1,
-        linked_to=container,
+        linked_to=msw_paths["host_session_name"],
+        datetime_str=msw_paths["datetime"],
         printout=False,
     )
-    assert paths["datetime"] == "20260617_143022_000001"
-    assert paths["session_basename"] == "mouse_01__20260617_143022_000001__video_flir"
-    assert paths["host_session_name"] == container
-
-
-def test_linked_to_with_session_type_datetime_extracted():
-    # Container with session_type: subject__dt__session_type - dt is still parts[1]
-    container = "mouse_01__20260617_143022_000001__ephys"
-    paths = generate_session_paths(
-        "mouse_01",
-        "task",
-        "/data",
-        acq_type="video_flir",
-        version=NAMESPACE_V1,
-        linked_to=container,
-        printout=False,
-    )
-    assert paths["datetime"] == "20260617_143022_000001"
-    assert paths["session_basename"] == "mouse_01__20260617_143022_000001__video_flir"
+    assert video_paths["datetime"] == msw_paths["datetime"]
+    assert video_paths["host_session_name"] == msw_paths["host_session_name"]
+    expected = f"mouse_01__{msw_paths['datetime']}__video_flir"
+    assert video_paths["session_basename"] == expected
 
 
 # ---------------------------------------------------------------------------
