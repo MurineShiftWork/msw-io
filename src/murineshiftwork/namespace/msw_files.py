@@ -19,13 +19,8 @@ def msw_file(session_file_path: str | Path, artifact: str) -> Path:
         session_file_path: Base session path (session_paths["session_file_path"]).
         artifact: Artifact name suffix (e.g. "session.yaml", "df.jsonl", "log").
     """
-    from murineshiftwork.namespace.paths import get_msw_builder
-
     p = Path(session_file_path)
-    b = get_msw_builder()
-    values = b.extract_level_values("session", p.name)
-    values["artifact"] = artifact
-    return p.parent / b.build_path("file", values)
+    return p.parent / f"{p.name}.msw.{artifact}"
 
 
 def is_msw_file(path: str | Path) -> bool:

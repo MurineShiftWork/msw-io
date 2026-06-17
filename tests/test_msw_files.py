@@ -1,4 +1,4 @@
-"""Tests for namespace.msw.yaml, msw_files, and TaskRunner.get_path()."""
+"""Tests for namespace.msw.yaml, msw_files, paths, and TaskRunner.get_path()."""
 
 from pathlib import Path
 
@@ -6,7 +6,8 @@ import pytest
 
 _NAMESPACE_DIR = Path(__file__).parent.parent / "src" / "murineshiftwork" / "namespace"
 
-_BASE = "/data/mouse_01/mouse_01__20260524_143022_123456__sequence/mouse_01__20260524_143022_123456__sequence"
+# v4 acquisition basename: subject__datetime__acq_type
+_BASE = "/data/mouse_01/mouse_01__20260524_143022_123456/mouse_01__20260524_143022_123456__msw/mouse_01__20260524_143022_123456__msw"
 
 
 # ---------------------------------------------------------------------------
@@ -17,7 +18,7 @@ def test_msw_yaml_loads():
     from acquisition_namespace import NamespaceBuilder
 
     b = NamespaceBuilder.from_yaml(_NAMESPACE_DIR / "namespace.msw.yaml")
-    assert b.spec.version == "3.0"
+    assert b.spec.version == "4.0"
     assert b.hierarchy == ["subject", "session", "acquisition", "file"]
     assert "acquisition" not in b.optional_levels
 
@@ -64,16 +65,15 @@ def test_build_file_path_roundtrip(artifact):
     values = {
         "subject": "mouse_01",
         "datetime": "20260524_143022_123456",
-        "task": "sequence",
+        "acq_type": "msw",
         "artifact": artifact,
     }
     fname = b.build_path("file", values)
-    assert fname == f"mouse_01__20260524_143022_123456__sequence.msw.{artifact}"
+    assert fname == f"mouse_01__20260524_143022_123456__msw.msw.{artifact}"
 
-    # extract round-trip
     extracted = b.extract_level_values("file", fname)
     assert extracted["artifact"] == artifact
-    assert extracted["session"] == "mouse_01__20260524_143022_123456__sequence"
+    assert extracted["acquisition"] == "mouse_01__20260524_143022_123456__msw"
 
 
 def test_build_file_legacy_datetime():
@@ -85,13 +85,122 @@ def test_build_file_legacy_datetime():
         {
             "subject": "mouse_01",
             "datetime": "20210718_152153",
-            "task": "probabilistic_switching",
+            "acq_type": "msw",
             "artifact": "session.yaml",
         },
     )
-    assert (
-        fname == "mouse_01__20210718_152153__probabilistic_switching.msw.session.yaml"
+    assert fname == "mouse_01__20210718_152153__msw.msw.session.yaml"
+
+
+# ---------------------------------------------------------------------------
+# parse_acquisition_basename()
+
+
+def test_parse_acquisition_v4_msw():
+    from murineshiftwork.namespace.paths import parse_acquisition_basename
+
+    info = parse_acquisition_basename("mouse_01__20260524_143022_123456__msw")
+    assert info["subject"] == "mouse_01"
+    assert info["acq_type"] == "msw"
+    assert info["acq_version"] is None
+    assert info["is_legacy_acquisition"] is False
+
+
+def test_parse_acquisition_v4_with_version():
+    from murineshiftwork.namespace.paths import parse_acquisition_basename
+
+    info = parse_acquisition_basename("mouse_01__20260524_143022_123456__msw__v2")
+    assert info["acq_type"] == "msw"
+    assert info["acq_version"] == 2
+    assert info["is_legacy_acquisition"] is False
+
+
+def test_parse_acquisition_v4_pxi():
+    from murineshiftwork.namespace.paths import parse_acquisition_basename
+
+    info = parse_acquisition_basename("mouse_01__20260524_143022_123456__pxi")
+    assert info["acq_type"] == "pxi"
+    assert info["acq_version"] is None
+
+
+def test_parse_acquisition_legacy_task_name():
+    from murineshiftwork.namespace.paths import parse_acquisition_basename
+
+    info = parse_acquisition_basename(
+        "mouse_01__20260524_143022_123456__probabilistic_switching"
     )
+    assert info["acq_type"] == "msw"
+    assert info["task"] == "probabilistic_switching"
+    assert info["is_legacy_acquisition"] is True
+
+
+def test_parse_acquisition_legacy_second_precision():
+    from murineshiftwork.namespace.paths import parse_acquisition_basename
+
+    info = parse_acquisition_basename("mouse_01__20210718_152153__sequence")
+    assert info["subject"] == "mouse_01"
+    assert info["namespace_version"] == "legacy"
+    assert info["is_legacy_acquisition"] is True
+
+
+# ---------------------------------------------------------------------------
+# generate_session_paths()
+
+
+def test_generate_session_paths_v4_structure(tmp_path):
+    from murineshiftwork.namespace.paths import generate_session_paths
+
+    paths = generate_session_paths(
+        subject="mouse_01",
+        task="probabilistic_switching",
+        basepath=tmp_path,
+        acq_type="msw",
+        printout=False,
+    )
+    assert paths["acq_type"] == "msw"
+    assert paths["acq_version"] is None
+    assert "mouse_01" in paths["session_folder"]
+    assert paths["session_basename"].endswith("__msw")
+    assert "__" not in paths["subject"]
+
+
+def test_generate_session_paths_with_version(tmp_path):
+    from murineshiftwork.namespace.paths import generate_session_paths
+
+    paths = generate_session_paths(
+        subject="mouse_01",
+        task="seq",
+        basepath=tmp_path,
+        acq_type="msw",
+        acq_version=2,
+        printout=False,
+    )
+    assert paths["session_basename"].endswith("__v2")
+
+
+def test_generate_session_paths_session_type(tmp_path):
+    from murineshiftwork.namespace.paths import generate_session_paths
+
+    paths = generate_session_paths(
+        subject="mouse_01",
+        task="seq",
+        basepath=tmp_path,
+        session_type="ephys",
+        printout=False,
+    )
+    assert "ephys" in paths["host_session_name"]
+
+
+def test_generate_session_paths_rejects_double_underscore(tmp_path):
+    from murineshiftwork.namespace.paths import generate_session_paths
+
+    with pytest.raises(ValueError, match="double-underscore"):
+        generate_session_paths(
+            subject="bad__subject",
+            task="seq",
+            basepath=tmp_path,
+            printout=False,
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -145,7 +254,7 @@ def test_is_msw_file_false_for_plain_csv():
 def test_is_msw_file_false_for_no_separator():
     from murineshiftwork.namespace import is_msw_file
 
-    assert not is_msw_file("subject__20260524_143022_123456__task.jsonl")
+    assert not is_msw_file("subject__20260524_143022_123456__msw.jsonl")
 
 
 # ---------------------------------------------------------------------------

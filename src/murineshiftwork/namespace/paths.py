@@ -1,11 +1,15 @@
 """MSW session namespace: path generation and basename parsing.
 
-The MSW namespace encodes subject identity, datetime, and task into a
-canonical basename: ``{subject}__{datetime}__{task}``.  Two datetime
-precisions are supported:
+The MSW namespace (v4) hierarchy is subject > session > acquisition > file.
 
-- ``v1`` (current): microsecond precision — ``20260514_143022_123456``
-- ``legacy``: second precision — ``20210718_152153``
+Session container: ``{subject}__{datetime}[__{session_type}]``
+Acquisition:       ``{subject}__{datetime}__{acq_type}[__v{n}]``
+File:              ``{acq_basename}.msw.{artifact}``
+
+Two datetime precisions are supported for legacy compatibility:
+
+- ``v1`` (current): microsecond precision -- ``20260514_143022_123456``
+- ``legacy``: second precision -- ``20210718_152153``
 """
 
 from __future__ import annotations
@@ -15,10 +19,10 @@ from datetime import datetime
 from pathlib import Path
 
 # ---------------------------------------------------------------------------
-# Namespace versions
+# Namespace versions (datetime precision formats)
 
-NAMESPACE_V1 = "v1"  # current: microsecond precision  e.g. 20260514_143022_123456
-NAMESPACE_LEGACY = "legacy"  # pre-v1:  second precision    e.g. 20210718_152153
+NAMESPACE_V1 = "v1"
+NAMESPACE_LEGACY = "legacy"
 
 CURRENT_NAMESPACE_VERSION = NAMESPACE_V1
 
@@ -27,21 +31,26 @@ _NAMESPACE_FORMATS: dict[str, str] = {
     NAMESPACE_LEGACY: "%Y%m%d_%H%M%S",
 }
 
-# Parse order: most-specific first so the longer microsecond format is tried before
-# the seconds format (which is a valid prefix of the microsecond string).
 _PARSE_ORDER = [NAMESPACE_V1, NAMESPACE_LEGACY]
 
-# Convenience alias kept for callers that import MSW_DATETIME_FORMAT directly.
 MSW_DATETIME_FORMAT = _NAMESPACE_FORMATS[CURRENT_NAMESPACE_VERSION]
 
+# Acquisition type vocabulary.
+_KNOWN_ACQ_TYPES: frozenset[str] = frozenset(
+    {"msw", "pxi", "photo", "video_rce", "video_flir"}
+)
+
+# Matches version suffix components: v1, v2, v12, etc.
+_VERSION_RE = re.compile(r"^v(\d+)$")
+
 # ---------------------------------------------------------------------------
-# MSW artifact builder
+# NamespaceBuilder (lazy)
 
 _MSW_BUILDER = None
 
 
 def get_msw_builder():
-    """Return the module-level MSW NamespaceBuilder (lazy-loaded from namespace.msw.yaml)."""
+    """Return the module-level MSW NamespaceBuilder (lazy-loaded)."""
     global _MSW_BUILDER
     if _MSW_BUILDER is None:
         from acquisition_namespace import NamespaceBuilder
@@ -53,48 +62,8 @@ def get_msw_builder():
 
 
 # ---------------------------------------------------------------------------
-# Parsing
+# Validation
 
-
-def parse_session_basename(basename: str) -> dict:
-    """Parse subject, datetime, task from a session basename.
-
-    Returns dict with keys:
-        subject (str), datetime (datetime), datetime_str (str),
-        task (str), namespace_version (str).
-
-    Raises ValueError if the basename cannot be parsed.
-    """
-    builder = get_msw_builder()
-    try:
-        values = builder.extract_level_values("session", str(basename))
-    except ValueError:
-        raise ValueError(
-            f"Expected 3 '__'-separated parts (subject, datetime, task), "
-            f"cannot parse: {basename!r}"
-        ) from None
-
-    dt_str = values["datetime"]
-    for version in _PARSE_ORDER:
-        try:
-            dt = datetime.strptime(dt_str, _NAMESPACE_FORMATS[version])
-            return {
-                "subject": values["subject"],
-                "datetime": dt,
-                "datetime_str": dt_str,
-                "task": values["task"],
-                "namespace_version": version,
-            }
-        except ValueError:
-            continue
-
-    raise ValueError(
-        f"Cannot parse datetime {dt_str!r} in basename {basename!r}. "
-        f"Tried namespace versions: {_PARSE_ORDER}"
-    )
-
-
-# Characters forbidden in subject / task path components.
 _FORBIDDEN_PATH_CHARS = re.compile(r'[#@!$%^&*()+=\[\]{};:\'",<>?\\|`~ ]')
 
 
@@ -105,6 +74,118 @@ def _validate_path_component(value: str, field: str) -> None:
             f"{field} contains forbidden characters {bad!r}: {value!r}. "
             "Use only letters, digits, hyphens, and underscores."
         )
+    if "__" in value:
+        raise ValueError(
+            f"{field} contains double-underscore (__), which is the namespace "
+            f"separator: {value!r}"
+        )
+
+
+# ---------------------------------------------------------------------------
+# Parsing
+
+
+def _parse_datetime(dt_str: str) -> tuple[datetime, str]:
+    """Return (datetime, namespace_version) for a datetime string, or raise."""
+    for version in _PARSE_ORDER:
+        try:
+            return datetime.strptime(dt_str, _NAMESPACE_FORMATS[version]), version
+        except ValueError:
+            continue
+    raise ValueError(
+        f"Cannot parse datetime {dt_str!r}. Tried: {_PARSE_ORDER}"
+    )
+
+
+def parse_acquisition_basename(basename: str) -> dict:
+    """Parse an acquisition directory basename into its components.
+
+    Handles both v4 basenames (3 or 4 components) and legacy 3-component
+    basenames where the third component is a task name rather than a typed
+    acquisition identifier.
+
+    Returns dict with keys:
+        subject, datetime, datetime_str, acq_type, acq_version,
+        task, namespace_version, is_legacy_acquisition.
+    """
+    parts = str(basename).split("__")
+    if len(parts) < 2:
+        raise ValueError(f"Cannot parse acquisition basename: {basename!r}")
+
+    # Find datetime by scanning parts
+    dt = dt_str = ns_version = None
+    dt_idx = None
+    for i, part in enumerate(parts):
+        try:
+            dt, ns_version = _parse_datetime(part)
+            dt_str = part
+            dt_idx = i
+            break
+        except ValueError:
+            continue
+
+    if dt_idx is None:
+        raise ValueError(
+            f"No datetime component found in acquisition basename: {basename!r}"
+        )
+
+    subject = "__".join(parts[:dt_idx])
+    tail = parts[dt_idx + 1 :]
+
+    if not tail:
+        raise ValueError(
+            f"Acquisition basename has no type component after datetime: {basename!r}"
+        )
+
+    acq_type = tail[0]
+    acq_version: int | None = None
+    task: str | None = None
+    is_legacy = False
+
+    if len(tail) == 1:
+        # 3-component: subject__dt__acq_type_or_task
+        if acq_type not in _KNOWN_ACQ_TYPES:
+            task = acq_type
+            acq_type = "msw"
+            is_legacy = True
+    elif len(tail) >= 2:
+        version_match = _VERSION_RE.match(tail[1])
+        if version_match:
+            acq_version = int(version_match.group(1))
+        else:
+            # Two components after datetime but second is not a version - treat
+            # entire tail as legacy task name.
+            task = "__".join(tail)
+            acq_type = "msw"
+            is_legacy = True
+
+    return {
+        "subject": subject,
+        "datetime": dt,
+        "datetime_str": dt_str,
+        "acq_type": acq_type,
+        "acq_version": acq_version,
+        "task": task,
+        "namespace_version": ns_version,
+        "is_legacy_acquisition": is_legacy,
+    }
+
+
+def parse_session_basename(basename: str) -> dict:
+    """Parse a session/acquisition basename into subject, datetime, task.
+
+    Compatibility shim over parse_acquisition_basename(). Returns the same
+    keys as the original function: subject, datetime, datetime_str, task,
+    namespace_version.
+    """
+    info = parse_acquisition_basename(basename)
+    return {
+        "subject": info["subject"],
+        "datetime": info["datetime"],
+        "datetime_str": info["datetime_str"],
+        "task": info["task"] or info["acq_type"],
+        "namespace_version": info["namespace_version"],
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -115,37 +196,44 @@ def generate_session_paths(
     subject: str,
     task: str,
     basepath: str | Path,
+    acq_type: str = "msw",
+    acq_version: int | None = None,
+    session_type: str | None = None,
     version: str = CURRENT_NAMESPACE_VERSION,
     default_subject: str = "_test_subject",
     linked_to: str | None = None,
     printout: bool = True,
 ) -> dict:
-    """Generate a validated session path dictionary for a given namespace version.
+    """Generate a validated session path dictionary (v4 namespace).
 
-    Builds the canonical session basename (``subject__datetime__task``) and
-    derives all associated paths under ``basepath``.  Tasks whose name starts
-    with ``_test__`` are redirected to ``default_subject`` so test runs do not
-    pollute real subject directories.
+    Builds the session container (``subject__datetime[__session_type]``) and
+    acquisition basename (``subject__datetime__acq_type[__vN]``), then derives
+    all associated paths under ``basepath``.
+
+    Tasks whose name starts with ``_test__`` are redirected to
+    ``default_subject`` so test runs do not pollute real subject directories.
 
     Args:
-        subject: Animal/subject identifier (letters, digits, hyphens, underscores).
-        task: Task name (same character restrictions as ``subject``).
-        basepath: Root data directory under which subject folders live.
-        version: Namespace version — ``"v1"`` (default) or ``"legacy"``.
+        subject: Animal/subject identifier. Must not contain ``__``.
+        task: Task name. Used for the ``task`` key in returned dict only; not
+            part of the v4 path structure.
+        basepath: Root data directory.
+        acq_type: Acquisition type identifier (``"msw"``, ``"pxi"``,
+            ``"photo"``, ``"video_rce"``, ``"video_flir"``). Default ``"msw"``.
+        acq_version: Integer format version appended as ``__vN``. ``None``
+            omits the version component (e.g. for ``pxi``).
+        session_type: Optional label appended to the session container name.
+        version: Datetime precision format -- ``"v1"`` (default) or
+            ``"legacy"``.
         default_subject: Subject name used when task starts with ``_test__``.
-        linked_to: If provided, use this string as the host-session container
-            name instead of deriving one from the task name.
-        printout: Print the generated paths to stdout when ``True``.
+        linked_to: Override the entire session container name verbatim.
+        printout: Print generated paths to stdout.
 
     Returns:
-        Dict with keys: ``subject``, ``datetime``, ``task``, ``basepath``,
-        ``namespace_version``, ``host_session_name``, ``acquisition_name``,
-        ``session_basename``, ``session_folder``, ``session_folder_relative``,
-        ``session_file_path``.
-
-    Raises:
-        ValueError: If ``version`` is not a known namespace version, or if
-            ``subject`` or ``task`` contain forbidden characters.
+        Dict with keys: ``subject``, ``datetime``, ``task``, ``acq_type``,
+        ``acq_version``, ``basepath``, ``namespace_version``,
+        ``host_session_name``, ``acquisition_name``, ``session_basename``,
+        ``session_folder``, ``session_folder_relative``, ``session_file_path``.
     """
     if version not in _NAMESPACE_FORMATS:
         raise ValueError(
@@ -157,33 +245,37 @@ def generate_session_paths(
 
     if str(task).startswith("_test__"):
         subject = default_subject
+
     _validate_path_component(subject, "Subject name")
 
     dt = datetime.now().strftime(_NAMESPACE_FORMATS[version])
-    values = {"subject": subject, "datetime": dt, "task": task}
 
-    builder = get_msw_builder()
-    session_basename = builder.build_path("session", values)
-
+    # --- Session container ---
     if linked_to:
         session_container = linked_to
+    elif session_type:
+        session_container = f"{subject}__{dt}__{session_type}"
     else:
-        session_container = builder.build_path(
-            "session", {**values, "task": f"session_{task}"}
-        )
+        session_container = f"{subject}__{dt}"
 
-    host_session_name = session_container
-    acquisition_name = session_basename
+    # --- Acquisition basename ---
+    if acq_version is not None:
+        session_basename = f"{subject}__{dt}__{acq_type}__v{acq_version}"
+    else:
+        session_basename = f"{subject}__{dt}__{acq_type}"
+
     session_folder = basepath / subject / session_container / session_basename
 
     session_paths = {
         "subject": subject,
         "datetime": dt,
         "task": task,
+        "acq_type": acq_type,
+        "acq_version": acq_version,
         "basepath": basepath,
         "namespace_version": version,
-        "host_session_name": host_session_name,
-        "acquisition_name": acquisition_name,
+        "host_session_name": session_container,
+        "acquisition_name": session_basename,
         "session_basename": session_basename,
         "session_folder": session_folder.as_posix(),
         "session_folder_relative": session_folder.relative_to(basepath).as_posix(),
@@ -207,7 +299,7 @@ def build_data_paths(
     linked_to=None,
     printout=True,
 ) -> dict:
-    """Compatibility shim - calls generate_session_paths with CURRENT_NAMESPACE_VERSION."""
+    """Compatibility shim - calls generate_session_paths with current defaults."""
     return generate_session_paths(
         subject=subject,
         task=task,

@@ -49,6 +49,7 @@ class MswSession(BaseModel):
     subject: str
     datetime_str: str
     task: str
+    acq_type: str = ""
 
     # provenance
     namespace_version: str | None
@@ -87,6 +88,7 @@ class MswSession(BaseModel):
             "subject": self.subject,
             "datetime_str": self.datetime_str,
             "task": self.task,
+            "acq_type": self.acq_type,
             "namespace_version": self.namespace_version,
             "artifact_format": self.artifact_format,
             "msw_version": self.msw_version,
