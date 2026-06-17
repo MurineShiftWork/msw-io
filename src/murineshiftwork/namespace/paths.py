@@ -202,6 +202,7 @@ def generate_session_paths(
     version: str = CURRENT_NAMESPACE_VERSION,
     default_subject: str = "_test_subject",
     linked_to: str | None = None,
+    datetime_str: str | None = None,
     printout: bool = True,
 ) -> dict:
     """Generate a validated session path dictionary (v4 namespace).
@@ -227,6 +228,10 @@ def generate_session_paths(
             ``"legacy"``.
         default_subject: Subject name used when task starts with ``_test__``.
         linked_to: Override the entire session container name verbatim.
+        datetime_str: Re-use an existing datetime string instead of generating
+            a new one.  Pass ``session_paths["datetime"]`` from the primary
+            acquisition when generating a sibling acquisition (e.g.
+            ``video_flir``) so both basenames share the same timestamp.
         printout: Print generated paths to stdout.
 
     Returns:
@@ -248,7 +253,7 @@ def generate_session_paths(
 
     _validate_path_component(subject, "Subject name")
 
-    dt = datetime.now().strftime(_NAMESPACE_FORMATS[version])
+    dt = datetime_str if datetime_str is not None else datetime.now().strftime(_NAMESPACE_FORMATS[version])
 
     # --- Session container ---
     if linked_to:
