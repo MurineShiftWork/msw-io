@@ -106,6 +106,40 @@ def test_v1_child_session_nesting():
     assert paths["session_folder"].startswith(f"/data/mouse_01/{parent}/")
 
 
+def test_linked_to_datetime_auto_extracted():
+    # When linked_to is set, the sibling acquisition basename must share the
+    # same datetime as the container (subject__dt), not a freshly generated one.
+    container = "mouse_01__20260617_143022_000001"
+    paths = generate_session_paths(
+        "mouse_01",
+        "task",
+        "/data",
+        acq_type="video_flir",
+        version=NAMESPACE_V1,
+        linked_to=container,
+        printout=False,
+    )
+    assert paths["datetime"] == "20260617_143022_000001"
+    assert paths["session_basename"] == "mouse_01__20260617_143022_000001__video_flir"
+    assert paths["host_session_name"] == container
+
+
+def test_linked_to_with_session_type_datetime_extracted():
+    # Container with session_type: subject__dt__session_type - dt is still parts[1]
+    container = "mouse_01__20260617_143022_000001__ephys"
+    paths = generate_session_paths(
+        "mouse_01",
+        "task",
+        "/data",
+        acq_type="video_flir",
+        version=NAMESPACE_V1,
+        linked_to=container,
+        printout=False,
+    )
+    assert paths["datetime"] == "20260617_143022_000001"
+    assert paths["session_basename"] == "mouse_01__20260617_143022_000001__video_flir"
+
+
 # ---------------------------------------------------------------------------
 # generate_session_paths: legacy
 
