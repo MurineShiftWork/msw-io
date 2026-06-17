@@ -24,16 +24,25 @@ from murineshiftwork.readers.namespace import (
 
 
 class _PermissiveLoader(yaml.SafeLoader):
-    """SafeLoader that maps !!python/name: tags to None.
+    """SafeLoader that drops unresolvable PyYAML Python tags.
 
-    Historical session YAMLs may contain callables serialised with
-    !!python/name: by PyYAML's default Dumper. SafeLoader raises on those;
-    this loader silently drops them so old files remain readable.
+    Historical session YAMLs may contain serialised callables (e.g.
+    valve_s_for_ul as !!python/object/apply:builtins.getattr or
+    !!python/name:) written by PyYAML's default Dumper. SafeLoader raises
+    on those; this loader silently drops them so old files remain readable.
     """
 
 
 _PermissiveLoader.add_multi_constructor(
     "tag:yaml.org,2002:python/name:",
+    lambda loader, tag_suffix, node: None,
+)
+_PermissiveLoader.add_multi_constructor(
+    "tag:yaml.org,2002:python/object/apply:",
+    lambda loader, tag_suffix, node: None,
+)
+_PermissiveLoader.add_multi_constructor(
+    "tag:yaml.org,2002:python/object:",
     lambda loader, tag_suffix, node: None,
 )
 
