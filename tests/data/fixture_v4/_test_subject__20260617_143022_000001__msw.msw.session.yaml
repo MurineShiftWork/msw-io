@@ -1,0 +1,33 @@
+msw_format_version: 2
+process:
+  msw_version: 2.0.0
+  git_commit: ''
+  task: probabilistic_switching
+  subject: _test_subject
+  setup: setup-1
+  serial_port: /dev/ttyACM1
+  out_path: /mnt/data/data
+  session_folder: /mnt/data/data/_test_subject/_test_subject__20260617_143022_000001/_test_subject__20260617_143022_000001__msw
+  session_basename: _test_subject__20260617_143022_000001__msw
+  datetime: '20260617_143022_000001'
+task_settings:
+  HARDWARE_BNC_STIMULATION: 2
+  HARDWARE_BNC_TRIAL_START: 1
+  HARDWARE_PORT_LIGHT_INTENSITY: 50
+  HARDWARE_PORT_LIGHT_PORTS:
+  - center
+  HARDWARE_PULSEPAL_OUTPUT_CHANNEL: 1
+  HARDWARE_PULSEPAL_TRIGGER_CHANNEL: 1
+  HARDWARE_VALVES_FOR_AIR:
+  - 2
+  - 4
+  HARDWARE_VALVES_FOR_WATER:
+  - 1
+  - 3
+  LICK_EVENT_LEFT: Port1In
+  LICK_EVENT_RIGHT: Port3In
+  barcode_bit_duration_ms: 35.0
+  barcode_bits: 37
+  n_trials: 200
+  p_high_port: 0.8
+  p_switch: 0.02

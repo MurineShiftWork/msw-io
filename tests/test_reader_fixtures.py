@@ -400,3 +400,69 @@ def test_normalize_host_block_does_not_mutate_input():
     original = dict(block)
     _normalize_host_block(block)
     assert block == original
+
+
+# ---------------------------------------------------------------------------
+# V4 fixture: v4-namespace basename (subject__datetime__acq_type)
+
+
+def _v4_session_dir():
+    d = FIXTURES_DIR / "fixture_v4"
+    if not d.exists():
+        pytest.skip(f"Fixture dir absent: {d}")
+    return d
+
+
+def test_v4_fixture_basename_parses_as_known_acq_type():
+    from murineshiftwork.namespace.paths import parse_acquisition_basename
+
+    info = parse_acquisition_basename("_test_subject__20260617_143022_000001__msw")
+    assert info["acq_type"] == "msw"
+    assert info["is_legacy_acquisition"] is False
+    assert info["subject"] == "_test_subject"
+
+
+def test_v4_read_session_data_complete():
+    from murineshiftwork.readers.session import read_session_data
+
+    d = read_session_data(str(_v4_session_dir()))
+    assert d["is_complete_session"] is True
+
+
+def test_v4_read_session_data_not_legacy():
+    from murineshiftwork.readers.session import read_session_data
+
+    d = read_session_data(str(_v4_session_dir()))
+    assert d["is_legacy_session"] is False
+
+
+def test_v4_read_session_data_df_nonempty():
+    from murineshiftwork.readers.session import read_session_data
+
+    d = read_session_data(str(_v4_session_dir()))
+    assert isinstance(d.get("df"), pd.DataFrame)
+    assert d["df"].shape[0] > 0
+
+
+def test_v4_load_session_acq_type_field():
+    from murineshiftwork.readers.batch import load_session
+
+    sess = load_session(_v4_session_dir())
+    assert sess.acq_type == "msw"
+    assert sess.subject == "_test_subject"
+    assert sess.datetime_str == "20260617_143022_000001"
+
+
+def test_v4_load_session_task_returns_acq_type():
+    """For a v4 basename the task field echoes the acq_type, not a task name."""
+    from murineshiftwork.readers.batch import load_session
+
+    sess = load_session(_v4_session_dir())
+    assert sess.task == "msw"
+
+
+def test_v4_msw_version_from_session_yaml():
+    from murineshiftwork.readers.batch import load_session
+
+    sess = load_session(_v4_session_dir())
+    assert sess.msw_version == "2.0.0"

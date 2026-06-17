@@ -20,20 +20,27 @@ log = logging.getLogger(__name__)
 
 
 def _parse_identity(session_dir: Path) -> dict:
-    from murineshiftwork.namespace.paths import parse_session_basename
+    from murineshiftwork.namespace.paths import parse_acquisition_basename
     from murineshiftwork.readers.namespace import _infer_session_basename
 
     basename = _infer_session_basename(session_dir) or session_dir.name
     try:
-        info = parse_session_basename(basename)
+        info = parse_acquisition_basename(basename)
         return {
             "basename": basename,
             "subject": info["subject"],
             "datetime_str": info["datetime_str"],
-            "task": info["task"],
+            "task": info["task"] or info["acq_type"],
+            "acq_type": info["acq_type"],
         }
     except Exception:
-        return {"basename": basename, "subject": "", "datetime_str": "", "task": ""}
+        return {
+            "basename": basename,
+            "subject": "",
+            "datetime_str": "",
+            "task": "",
+            "acq_type": "",
+        }
 
 
 def load_session(
@@ -68,6 +75,7 @@ def load_session(
         subject=identity["subject"],
         datetime_str=identity["datetime_str"],
         task=identity["task"],
+        acq_type=identity.get("acq_type", ""),
         namespace_version=raw.get("namespace_version"),
         artifact_format=raw["artifact_format"],
         msw_version=raw.get("msw_version", ""),
