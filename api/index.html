@@ -617,6 +617,28 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession.session_type" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        session_type
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession.session_version" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        session_version
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#murineshiftwork.readers.models.MswSession.settings_ephys" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1235,6 +1257,28 @@
     <span class="md-ellipsis">
       
         session_dir
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession.session_type" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        session_type
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#murineshiftwork.readers.models.MswSession.session_version" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        session_version
       
     </span>
   </a>
@@ -2196,6 +2240,41 @@ settings.process) are all present and non-null.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="session_type = ''
+
+  
+      class-attribute
+      instance-attribute
+   (murineshiftwork.readers.models.MswSession.session_type)" href="#murineshiftwork.readers.models.MswSession.session_type">session_type</a></code></td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Task-type label from the session container name
+(<code>session_type</code> field in <code>task.yaml</code>); empty string for
+sessions that predate v4.2 naming.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="session_version = None
+
+  
+      class-attribute
+      instance-attribute
+   (murineshiftwork.readers.models.MswSession.session_version)" href="#murineshiftwork.readers.models.MswSession.session_version">session_version</a></code></td>
+            <td>
+                  <code><span title="int">int</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Integer version from the session container name;
+<code>None</code> for sessions without a <code>_vN</code> suffix.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
             <td><code><a class="autorefs autorefs-internal" title="acquisition_name = None
 
   
@@ -2529,6 +2608,48 @@ settings.process) are all present and non-null.</p>
   </span>
 
 <a href="#murineshiftwork.readers.models.MswSession.session_dir" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="murineshiftwork.readers.models.MswSession.session_type" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">session_type</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#murineshiftwork.readers.models.MswSession.session_type" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="murineshiftwork.readers.models.MswSession.session_version" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">session_version</span> <span class="o">=</span> <span class="kc">None</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#murineshiftwork.readers.models.MswSession.session_version" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents ">
@@ -3126,7 +3247,7 @@ settings.process) are all present and non-null.</p>
     <div class="doc doc-contents first">
 
         <p>Generate a validated session path dictionary (v4 namespace).</p>
-<p>Builds the session container (<code>subject__datetime[__session_type]</code>) and
+<p>Builds the session container (<code>subject__datetime[__session_type_vN]</code>) and
 acquisition basename (<code>subject__datetime__acq_type[__vN]</code>), then derives
 all associated paths under <code>basepath</code>.</p>
 <p>Tasks whose name starts with <code>_test__</code> are redirected to
@@ -3219,8 +3340,9 @@ part of the v4 path structure.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Integer format version appended as <code>__vN</code>. <code>None</code>
-omits the version component (e.g. for <code>pxi</code>).</p>
+                <p>Integer format version appended as <code>__vN</code> on the
+acquisition basename, and as <code>_vN</code> on the session container when
+<code>session_type</code> is also set. <code>None</code> omits the version component.</p>
               </div>
             </td>
             <td>
@@ -3236,7 +3358,9 @@ omits the version component (e.g. for <code>pxi</code>).</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Optional label appended to the session container name.</p>
+                <p>Optional task-type label for the session container.
+When combined with <code>acq_version</code>, produces
+<code>subject__datetime__session_type_vN</code>.</p>
               </div>
             </td>
             <td>
