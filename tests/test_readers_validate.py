@@ -10,6 +10,15 @@ import pytest
 
 from murineshiftwork.readers.validate import ValidationResult, validate_session
 
+try:
+    import pyarrow  # noqa: F401
+
+    _PYARROW = True
+except ImportError:
+    _PYARROW = False
+
+_skip_no_pyarrow = pytest.mark.skipif(not _PYARROW, reason="pyarrow not installed")
+
 FIXTURES_DIR = Path(__file__).parent / "data"
 
 
@@ -29,6 +38,7 @@ def test_validate_returns_validation_result_jsonl():
     assert isinstance(result, ValidationResult)
 
 
+@_skip_no_pyarrow
 def test_validate_returns_validation_result_pkl():
     result = validate_session(_session_dir("pkl"), verbose=False)
     assert isinstance(result, ValidationResult)
@@ -44,6 +54,7 @@ def test_validate_jsonl_msw_complete():
     assert not msw_issues, f"MSW completeness issues: {msw_issues}"
 
 
+@_skip_no_pyarrow
 def test_validate_pkl_msw_complete():
     result = validate_session(_session_dir("pkl"), verbose=False)
     msw_issues = [i for i in result.issues if "MSW" in i or "read_session" in i]
@@ -55,6 +66,7 @@ def test_validate_jsonl_passes():
     assert result.passed, f"Validation failed: {result.issues}"
 
 
+@_skip_no_pyarrow
 def test_validate_pkl_passes():
     result = validate_session(_session_dir("pkl"), verbose=False)
     assert result.passed, f"Validation failed: {result.issues}"

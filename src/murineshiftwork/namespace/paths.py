@@ -109,15 +109,15 @@ def parse_subject(subject: str) -> dict:
         )
     builder = get_msw_builder()
     try:
-        sid = builder.validate_path_level("subject_id", parts[0], {})["subject_id"]
-    except (ValueError, KeyError) as exc:
+        sid = builder.validate_field("subject_id", parts[0])
+    except ValueError as exc:
         raise ValueError(
             f"subject_id {parts[0]!r}: expected letter(s) followed by digits "
             "(e.g. t004, seq001)."
         ) from exc
     try:
-        aid = builder.validate_path_level("animal_id", parts[1], {})["animal_id"]
-    except (ValueError, KeyError) as exc:
+        aid = builder.validate_field("animal_id", parts[1])
+    except ValueError as exc:
         raise ValueError(
             f"animal_id {parts[1]!r}: expected single letter followed by digits "
             "(e.g. m2045, r001)."
@@ -125,8 +125,8 @@ def parse_subject(subject: str) -> dict:
     fields: list[str] = []
     for token in parts[2:]:
         try:
-            builder.validate_path_level("extra_field", token, {})
-        except (ValueError, KeyError) as exc:
+            builder.validate_field("extra_field", token)
+        except ValueError as exc:
             raise ValueError(
                 f"Extra field {token!r}: expected alphanumeric token (e.g. 4A7B, batch2)."
             ) from exc

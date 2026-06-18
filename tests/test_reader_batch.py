@@ -7,6 +7,15 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
+try:
+    import pyarrow  # noqa: F401
+
+    _PYARROW = True
+except ImportError:
+    _PYARROW = False
+
+_skip_no_pyarrow = pytest.mark.skipif(not _PYARROW, reason="pyarrow not installed")
+
 FIXTURES_DIR = Path(__file__).parent / "data"
 
 
@@ -24,7 +33,7 @@ def _skip_if_absent(d: Path) -> Path:
     "rel_path",
     [
         "fixture_jsonl",
-        "fixture_pkl",
+        pytest.param("fixture_pkl", marks=_skip_no_pyarrow),
         "fixture_legacy/subject003__20210426_183409__probabilistic_switching",
         "fixture_optotagging/_test_subject__20260527_133053_901389__optotagging",
     ],
@@ -42,7 +51,7 @@ def test_load_session_returns_msw_session(rel_path):
     "rel_path,expected_subject",
     [
         ("fixture_jsonl", "subject001"),
-        ("fixture_pkl", "subject002"),
+        pytest.param("fixture_pkl", "subject002", marks=_skip_no_pyarrow),
         (
             "fixture_legacy/subject003__20210426_183409__probabilistic_switching",
             "subject003",
