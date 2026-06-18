@@ -35,6 +35,11 @@ class MswSession(BaseModel):
         is_complete: ``True`` when the required artifacts (df, settings.task,
             settings.process) are all present and non-null.
         is_ephys: ``True`` when an ephys/host-session block is present.
+        session_type: Task-type label from the session container name
+            (``session_type`` field in ``task.yaml``); empty string for
+            sessions that predate v4.2 naming.
+        session_version: Integer version from the session container name;
+            ``None`` for sessions without a ``_vN`` suffix.
         acquisition_name: Name of the parent acquisition container, set by
             ``load_acquisition``; ``None`` for standalone sessions.
         acquisition_dir: Path to the parent acquisition container, set by
@@ -50,6 +55,8 @@ class MswSession(BaseModel):
     datetime_str: str
     task: str
     acq_type: str = ""
+    session_type: str = ""
+    session_version: int | None = None
 
     # provenance
     namespace_version: str | None
@@ -89,6 +96,8 @@ class MswSession(BaseModel):
             "datetime_str": self.datetime_str,
             "task": self.task,
             "acq_type": self.acq_type,
+            "session_type": self.session_type,
+            "session_version": self.session_version,
             "namespace_version": self.namespace_version,
             "artifact_format": self.artifact_format,
             "msw_version": self.msw_version,

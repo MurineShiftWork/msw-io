@@ -2,7 +2,7 @@
 
 The MSW namespace (v4) hierarchy is subject > session > acquisition > file.
 
-Session container: ``{subject}__{datetime}[__{session_type}]``
+Session container: ``{subject}__{datetime}[__{session_type}_v{n}]``
 Acquisition:       ``{subject}__{datetime}__{acq_type}[__v{n}]``
 File:              ``{acq_basename}.msw.{artifact}``
 
@@ -284,7 +284,7 @@ def generate_session_paths(
 ) -> dict:
     """Generate a validated session path dictionary (v4 namespace).
 
-    Builds the session container (``subject__datetime[__session_type]``) and
+    Builds the session container (``subject__datetime[__session_type_vN]``) and
     acquisition basename (``subject__datetime__acq_type[__vN]``), then derives
     all associated paths under ``basepath``.
 
@@ -298,9 +298,12 @@ def generate_session_paths(
         basepath: Root data directory.
         acq_type: Acquisition type identifier (``"msw"``, ``"pxi"``,
             ``"photo"``, ``"video_rce"``, ``"video_flir"``). Default ``"msw"``.
-        acq_version: Integer format version appended as ``__vN``. ``None``
-            omits the version component (e.g. for ``pxi``).
-        session_type: Optional label appended to the session container name.
+        acq_version: Integer format version appended as ``__vN`` on the
+            acquisition basename, and as ``_vN`` on the session container when
+            ``session_type`` is also set. ``None`` omits the version component.
+        session_type: Optional task-type label for the session container.
+            When combined with ``acq_version``, produces
+            ``subject__datetime__session_type_vN``.
         version: Datetime precision format -- ``"v1"`` (default) or
             ``"legacy"``.
         default_subject: Subject name used when task starts with ``_test__``.
@@ -340,7 +343,10 @@ def generate_session_paths(
     if linked_to:
         session_container = linked_to
     elif session_type:
-        session_container = f"{subject}__{dt}__{session_type}"
+        if acq_version is not None:
+            session_container = f"{subject}__{dt}__{session_type}_v{acq_version}"
+        else:
+            session_container = f"{subject}__{dt}__{session_type}"
     else:
         session_container = f"{subject}__{dt}"
 

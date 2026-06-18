@@ -342,3 +342,43 @@ def test_load_subject_mixed_depths(tmp_path):
     subjects = {s.subject for s in sessions}
     assert "subject001" in subjects
     assert "_test_subject" in subjects
+
+
+def test_load_session_extracts_session_type_from_v4_container(tmp_path):
+    """MswSession.session_type and session_version populated from v4 container name."""
+    from murineshiftwork.readers import load_session
+
+    acq_basename = (
+        "subject001__20260508_172956_258756__probabilistic_switching_fixedsubjects"
+    )
+    # v4 container: subject__datetime__session_type_vN
+    container = (
+        tmp_path
+        / "subject001__20260508_172956_258756__probabilistic_switching_fixedsubjects_v1"
+    )
+    container.mkdir()
+    (container / acq_basename).symlink_to(FIXTURES_DIR / "fixture_jsonl")
+
+    sess = load_session(container / acq_basename)
+    assert sess.session_type == "probabilistic_switching_fixedsubjects"
+    assert sess.session_version == 1
+
+
+def test_load_session_session_type_empty_for_old_container(tmp_path):
+    """MswSession.session_type is empty string for pre-v4 container names."""
+    from murineshiftwork.readers import load_session
+
+    acq_basename = (
+        "subject001__20260508_172956_258756__probabilistic_switching_fixedsubjects"
+    )
+    # old-style container without _vN suffix
+    container = (
+        tmp_path
+        / "subject001__20260508_172956_258756__session_probabilistic_switching_fixedsubjects"
+    )
+    container.mkdir()
+    (container / acq_basename).symlink_to(FIXTURES_DIR / "fixture_jsonl")
+
+    sess = load_session(container / acq_basename)
+    assert sess.session_type == ""
+    assert sess.session_version is None
