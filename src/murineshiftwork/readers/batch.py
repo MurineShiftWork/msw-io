@@ -43,6 +43,21 @@ def _parse_identity(session_dir: Path) -> dict:
         }
 
 
+def _parse_session_container(session_dir: Path) -> dict:
+    """Extract session_type and session_version from the parent container name."""
+    from murineshiftwork.namespace.paths import get_msw_builder
+
+    try:
+        groups = get_msw_builder().validate_path_level(
+            "session", session_dir.parent.name, {}
+        )
+        st = groups.get("session_type") or ""
+        sv = int(groups["version_tag"]) if groups.get("version_tag") else None
+        return {"session_type": st, "session_version": sv}
+    except Exception:
+        return {"session_type": "", "session_version": None}
+
+
 def load_session(
     session_dir,
     *,
@@ -68,6 +83,7 @@ def load_session(
     session_dir = Path(session_dir)
     raw = read_session_data(session_dir)
     identity = _parse_identity(session_dir)
+    container = _parse_session_container(session_dir)
 
     return MswSession(
         session_dir=session_dir,
@@ -76,6 +92,8 @@ def load_session(
         datetime_str=identity["datetime_str"],
         task=identity["task"],
         acq_type=identity.get("acq_type", ""),
+        session_type=container["session_type"],
+        session_version=container["session_version"],
         namespace_version=raw.get("namespace_version"),
         artifact_format=raw["artifact_format"],
         msw_version=raw.get("msw_version", ""),

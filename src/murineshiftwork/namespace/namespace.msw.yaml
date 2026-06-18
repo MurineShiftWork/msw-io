@@ -27,9 +27,9 @@ levels:
     regex: "(?P<subject>[\\w\\-]+)"
     optional_fields: []
   session:
-    template: "{subject}__{datetime}"
-    regex: "(?P<subject>[\\w\\-]+)__(?P<datetime>\\d{8}_\\d{6}(?:_\\d{6})?)"
-    optional_fields: []
+    template: "{subject}__{datetime}__{session_type}_v{version_tag}"
+    regex: "(?P<subject>[\\w\\-]+)__(?P<datetime>\\d{8}_\\d{6}(?:_\\d{6})?)(?:__(?P<session_type>[\\w\\-]+)_v(?P<version_tag>\\d+))?"
+    optional_fields: [session_type, version_tag]
   acquisition:
     template: "{subject}__{datetime}__{acq_type}"
     regex: "(?P<subject>[\\w\\-]+)__(?P<datetime>\\d{8}_\\d{6}(?:_\\d{6})?)__(?P<acq_type>[\\w\\-]+)"

@@ -191,6 +191,35 @@ def test_generate_session_paths_session_type(tmp_path):
     assert "ephys" in paths["host_session_name"]
 
 
+def test_generate_session_paths_session_type_with_version(tmp_path):
+    from murineshiftwork.namespace.paths import generate_session_paths
+
+    paths = generate_session_paths(
+        subject="mouse_01",
+        task="seq",
+        basepath=tmp_path,
+        session_type="sequence",
+        acq_version=1,
+        printout=False,
+    )
+    assert paths["host_session_name"].endswith("__sequence_v1")
+    assert paths["session_basename"].endswith("__v1")
+
+
+def test_generate_session_paths_session_type_without_version(tmp_path):
+    from murineshiftwork.namespace.paths import generate_session_paths
+
+    paths = generate_session_paths(
+        subject="mouse_01",
+        task="seq",
+        basepath=tmp_path,
+        session_type="sequence",
+        printout=False,
+    )
+    assert "__sequence" in paths["host_session_name"]
+    assert not paths["host_session_name"].endswith("_v")
+
+
 def test_generate_session_paths_rejects_double_underscore(tmp_path):
     from murineshiftwork.namespace.paths import generate_session_paths
 
