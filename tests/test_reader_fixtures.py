@@ -9,6 +9,15 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
+try:
+    import pyarrow  # noqa: F401
+
+    _PYARROW = True
+except ImportError:
+    _PYARROW = False
+
+_skip_no_pyarrow = pytest.mark.skipif(not _PYARROW, reason="pyarrow not installed")
+
 FIXTURES_DIR = Path(__file__).parent / "data"
 
 
@@ -72,6 +81,7 @@ def test_save_reload_roundtrip_jsonl(tmp_path):
 # PKL: trial_data (low-level via read_trial_df: pkl uses pd.read_pickle)
 
 
+@_skip_no_pyarrow
 def test_read_trial_df_pkl_returns_dataframe():
     from murineshiftwork.readers.files import read_trial_df
 
@@ -83,6 +93,7 @@ def test_read_trial_df_pkl_returns_dataframe():
     assert isinstance(df, pd.DataFrame)
 
 
+@_skip_no_pyarrow
 def test_read_trial_df_pkl_nonempty():
     from murineshiftwork.readers.files import read_trial_df
 
@@ -149,6 +160,7 @@ def test_read_session_data_jsonl_has_standard_columns():
 # PKL: read_session_data (full reader)
 
 
+@_skip_no_pyarrow
 def test_read_session_data_pkl_keys():
     from murineshiftwork.readers.session import read_session_data
 
@@ -158,6 +170,7 @@ def test_read_session_data_pkl_keys():
     assert "is_complete_session" in d
 
 
+@_skip_no_pyarrow
 def test_read_session_data_pkl_df_is_dataframe():
     from murineshiftwork.readers.session import read_session_data
 

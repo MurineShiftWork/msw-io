@@ -18,7 +18,7 @@ def test_msw_yaml_loads():
     from acquisition_namespace import NamespaceBuilder
 
     b = NamespaceBuilder.from_yaml(_NAMESPACE_DIR / "namespace.msw.yaml")
-    assert b.spec.version == "4.1"
+    assert b.spec.version == "4.2"
     assert b.hierarchy == ["subject", "session", "acquisition", "file"]
     assert "acquisition" not in b.optional_levels
 

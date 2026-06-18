@@ -19,6 +19,15 @@ from murineshiftwork.readers.session import (
     read_session_data,
 )
 
+try:
+    import pyarrow  # noqa: F401
+
+    _PYARROW = True
+except ImportError:
+    _PYARROW = False
+
+_skip_no_pyarrow = pytest.mark.skipif(not _PYARROW, reason="pyarrow not installed")
+
 FIXTURES_DIR = Path(__file__).parent / "data"
 
 
@@ -90,7 +99,7 @@ def test_completeness_passes_without_raw_key():
 @pytest.mark.parametrize(
     "fixture",
     [
-        "fixture_pkl",
+        pytest.param("fixture_pkl", marks=_skip_no_pyarrow),
         "fixture_jsonl",
         "fixture_v2",
         "fixture_fixedsubjects",
@@ -115,7 +124,10 @@ def test_session_yaml_fixtures_are_complete(fixture):
     assert d["is_complete_session"]
 
 
-@pytest.mark.parametrize("fixture", ["fixture_pkl", "fixture_jsonl"])
+@pytest.mark.parametrize(
+    "fixture",
+    [pytest.param("fixture_pkl", marks=_skip_no_pyarrow), "fixture_jsonl"],
+)
 def test_separate_json_fixtures_detected(fixture):
     d = read_session_data(FIXTURES_DIR / fixture)
     assert d["artifact_format"] == ARTIFACT_FORMAT_SEPARATE_JSON
