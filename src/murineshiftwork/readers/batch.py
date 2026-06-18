@@ -44,7 +44,7 @@ def _parse_identity(session_dir: Path) -> dict:
 
 
 def _parse_session_container(session_dir: Path) -> dict:
-    """Extract session_type and session_version from the parent container name."""
+    """Extract session_type from the parent container name."""
     from murineshiftwork.namespace.paths import get_msw_builder
 
     try:
@@ -52,10 +52,12 @@ def _parse_session_container(session_dir: Path) -> dict:
             "session", session_dir.parent.name, {}
         )
         st = groups.get("session_type") or ""
-        sv = int(groups["version_tag"]) if groups.get("version_tag") else None
-        return {"session_type": st, "session_version": sv}
+        # Pre-migration containers used "session_task" naming; ignore the prefix.
+        if st.startswith("session_"):
+            return {"session_type": ""}
+        return {"session_type": st}
     except Exception:
-        return {"session_type": "", "session_version": None}
+        return {"session_type": ""}
 
 
 def load_session(
@@ -93,7 +95,6 @@ def load_session(
         task=identity["task"],
         acq_type=identity.get("acq_type", ""),
         session_type=container["session_type"],
-        session_version=container["session_version"],
         namespace_version=raw.get("namespace_version"),
         artifact_format=raw["artifact_format"],
         msw_version=raw.get("msw_version", ""),

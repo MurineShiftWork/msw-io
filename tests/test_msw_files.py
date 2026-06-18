@@ -202,7 +202,9 @@ def test_generate_session_paths_session_type_with_version(tmp_path):
         acq_version=1,
         printout=False,
     )
-    assert paths["host_session_name"].endswith("__sequence_v1")
+    # version is at acquisition level only; session container has no _vN
+    assert paths["host_session_name"].endswith("__sequence")
+    assert "_v1" not in paths["host_session_name"]
     assert paths["session_basename"].endswith("__v1")
 
 
