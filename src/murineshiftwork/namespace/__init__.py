@@ -11,6 +11,8 @@ from murineshiftwork.namespace.paths import (
     generate_session_paths as generate_session_paths,
 )
 from murineshiftwork.namespace.paths import get_msw_builder as get_msw_builder
+from murineshiftwork.namespace.paths import make_subject as make_subject
 from murineshiftwork.namespace.paths import (
     parse_session_basename as parse_session_basename,
 )
+from murineshiftwork.namespace.paths import parse_subject as parse_subject

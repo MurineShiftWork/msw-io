@@ -14,7 +14,9 @@ from murineshiftwork.namespace.paths import (
     NAMESPACE_V1,
     build_data_paths,
     generate_session_paths,
+    make_subject,
     parse_session_basename,
+    parse_subject,
 )
 
 # ---------------------------------------------------------------------------
@@ -255,3 +257,118 @@ def test_parse_bad_datetime_raises():
     # builder catches it before the version-detection loop.
     with pytest.raises(ValueError):
         parse_session_basename("mouse_01__notadatetime__flush")
+
+
+# ---------------------------------------------------------------------------
+# parse_subject / make_subject (v4.1 structured subject)
+
+
+@pytest.mark.parametrize(
+    "subject, expected",
+    [
+        (
+            "t004_m2045",
+            {"subject_id": "t004", "animal_id": "m2045", "tag_id": None, "fields": []},
+        ),
+        (
+            "s001_m1234",
+            {"subject_id": "s001", "animal_id": "m1234", "tag_id": None, "fields": []},
+        ),
+        (
+            "seq001_m0567_4A7B",
+            {
+                "subject_id": "seq001",
+                "animal_id": "m0567",
+                "tag_id": "4A7B",
+                "fields": ["4A7B"],
+            },
+        ),
+        (
+            "t004_m2045_LR3",
+            {
+                "subject_id": "t004",
+                "animal_id": "m2045",
+                "tag_id": "LR3",
+                "fields": ["LR3"],
+            },
+        ),
+        # Legacy 4-part subject (tag + extra metadata token)
+        (
+            "t004_m2045_LR3_batch2",
+            {
+                "subject_id": "t004",
+                "animal_id": "m2045",
+                "tag_id": "LR3",
+                "fields": ["LR3", "batch2"],
+            },
+        ),
+        # Legacy 5-part subject
+        (
+            "seq001_r012_4A7B_spindle_wk3",
+            {
+                "subject_id": "seq001",
+                "animal_id": "r012",
+                "tag_id": "4A7B",
+                "fields": ["4A7B", "spindle", "wk3"],
+            },
+        ),
+    ],
+)
+def test_parse_subject_valid(subject, expected):
+    assert parse_subject(subject) == expected
+
+
+@pytest.mark.parametrize(
+    "bad",
+    [
+        "t004",  # missing animal_id
+        "mouse001",  # no underscore separator for animal_id
+        "004_m2045",  # subject_id must start with letters
+        "t004_2045",  # animal_id must start with a letter
+        "t004_mm2045",  # animal_id must start with single letter
+        "_m2045",  # empty subject_id
+        "t004_",  # incomplete
+        "",  # empty
+    ],
+)
+def test_parse_subject_invalid(bad):
+    with pytest.raises(ValueError):
+        parse_subject(bad)
+
+
+def test_make_subject_two_parts():
+    assert make_subject("t004", "m2045") == "t004_m2045"
+
+
+def test_make_subject_three_parts():
+    assert make_subject("t004", "m2045", "4A7B") == "t004_m2045_4A7B"
+
+
+def test_make_subject_four_parts():
+    assert make_subject("t004", "m2045", "LR3", "batch2") == "t004_m2045_LR3_batch2"
+
+
+def test_make_subject_invalid_subject_id_raises():
+    with pytest.raises(ValueError):
+        make_subject("004", "m2045")
+
+
+def test_make_subject_invalid_animal_id_raises():
+    with pytest.raises(ValueError):
+        make_subject("t004", "2045")
+
+
+def test_make_subject_roundtrip():
+    s = make_subject("seq001", "r012", "LR3")
+    parts = parse_subject(s)
+    assert parts["subject_id"] == "seq001"
+    assert parts["animal_id"] == "r012"
+    assert parts["tag_id"] == "LR3"
+    assert parts["fields"] == ["LR3"]
+
+
+def test_parse_subject_fields_independent_of_tag_id():
+    """fields list always contains all extra tokens; tag_id is fields[0]."""
+    result = parse_subject("t004_m2045_A1_B2_C3")
+    assert result["fields"] == ["A1", "B2", "C3"]
+    assert result["tag_id"] == "A1"

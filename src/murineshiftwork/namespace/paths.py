@@ -82,6 +82,85 @@ def _validate_path_component(value: str, field: str) -> None:
 
 
 # ---------------------------------------------------------------------------
+# Structured subject helpers (v4.1)
+#
+# Field patterns live in namespace.msw.yaml under levels.subject_id,
+# levels.animal_id, and levels.extra_field.  Validation delegates to
+# NamespaceBuilder (via get_msw_builder()) so there are no duplicated patterns.
+
+
+def parse_subject(subject: str) -> dict:
+    """Parse a structured v4.1 subject string into its component fields.
+
+    Returns dict with keys:
+        subject_id (str), animal_id (str), tag_id (str|None), fields (list[str]).
+
+    ``tag_id`` is a convenience alias for ``fields[0]`` (None if no extra fields).
+    ``fields`` contains all extra tokens after subject_id and animal_id, in order.
+    Older subjects with 4-5 parts parse without error; extra parts go to ``fields``.
+
+    Raises ValueError if the string does not match the required prefix format.
+    """
+    parts = subject.split("_")
+    if len(parts) < 2:
+        raise ValueError(
+            f"Subject {subject!r} must contain at least subject_id and animal_id "
+            "separated by '_' (e.g. 't004_m2045')."
+        )
+    builder = get_msw_builder()
+    try:
+        sid = builder.validate_path_level("subject_id", parts[0], {})["subject_id"]
+    except (ValueError, KeyError) as exc:
+        raise ValueError(
+            f"subject_id {parts[0]!r}: expected letter(s) followed by digits "
+            "(e.g. t004, seq001)."
+        ) from exc
+    try:
+        aid = builder.validate_path_level("animal_id", parts[1], {})["animal_id"]
+    except (ValueError, KeyError) as exc:
+        raise ValueError(
+            f"animal_id {parts[1]!r}: expected single letter followed by digits "
+            "(e.g. m2045, r001)."
+        ) from exc
+    fields: list[str] = []
+    for token in parts[2:]:
+        try:
+            builder.validate_path_level("extra_field", token, {})
+        except (ValueError, KeyError) as exc:
+            raise ValueError(
+                f"Extra field {token!r}: expected alphanumeric token (e.g. 4A7B, batch2)."
+            ) from exc
+        fields.append(token)
+    return {
+        "subject_id": sid,
+        "animal_id": aid,
+        "tag_id": fields[0] if fields else None,
+        "fields": fields,
+    }
+
+
+def make_subject(subject_id: str, animal_id: str, *extra_fields: str) -> str:
+    """Construct and validate a v4.1 subject string.
+
+    Args:
+        subject_id: Lab/experiment label, e.g. ``"t004"``, ``"seq001"``.
+            Pattern: one or more letters followed by digits.
+        animal_id: Central registry ID, e.g. ``"m2045"``, ``"r001"``.
+            Pattern: single letter followed by digits.
+        *extra_fields: Zero or more extra tokens appended in order.
+            By convention the first is the physical tag (RFID, eartag, implant
+            serial), e.g. ``"4A7B"``, ``"LR3"``.
+
+    Returns:
+        Validated subject string, e.g. ``"t004_m2045"`` or
+        ``"t004_m2045_4A7B_batch2"``.
+    """
+    subject = "_".join([subject_id, animal_id, *extra_fields])
+    parse_subject(subject)
+    return subject
+
+
+# ---------------------------------------------------------------------------
 # Parsing
 
 

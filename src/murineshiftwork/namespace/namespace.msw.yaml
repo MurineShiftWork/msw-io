@@ -1,4 +1,4 @@
-version: "4.0"
+version: "4.1"
 description: "MSW acquisition namespace: subject > session > acquisition > file."
 hierarchy:
   - subject
@@ -6,6 +6,7 @@ hierarchy:
   - acquisition
   - file
 optional_levels: []
+
 levels:
   subject:
     template: "{subject}"
@@ -22,4 +23,19 @@ levels:
   file:
     template: "{acquisition}.msw.{artifact}"
     regex: "(?P<acquisition>.+)\\.msw\\.(?P<artifact>.+)"
+    optional_fields: []
+  # Subject field validators: not in path hierarchy; used by parse_subject / make_subject.
+  # A structured subject is: {subject_id}_{animal_id}[_{extra_field}...]
+  # fields[0] (tag_id by convention) is the physical tag when present.
+  subject_id:
+    template: "{subject_id}"
+    regex: "^(?P<subject_id>[A-Za-z]+[0-9]+)$"
+    optional_fields: []
+  animal_id:
+    template: "{animal_id}"
+    regex: "^(?P<animal_id>[A-Za-z][0-9]+)$"
+    optional_fields: []
+  extra_field:
+    template: "{extra_field}"
+    regex: "^(?P<extra_field>[A-Za-z0-9]+)$"
     optional_fields: []
