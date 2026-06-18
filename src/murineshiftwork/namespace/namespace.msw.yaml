@@ -1,4 +1,4 @@
-version: "4.2"
+version: "4.1"
 description: "MSW acquisition namespace: subject > session > acquisition > file."
 hierarchy:
   - subject

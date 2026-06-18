@@ -37,7 +37,7 @@ class MswSession(BaseModel):
         is_ephys: ``True`` when an ephys/host-session block is present.
         session_type: Task-type label from the session container name
             (``session_type`` field in ``task.yaml``); empty string for
-            sessions that predate v4.2 naming.
+            sessions that predate v4.1 naming.
         acquisition_name: Name of the parent acquisition container, set by
             ``load_acquisition``; ``None`` for standalone sessions.
         acquisition_dir: Path to the parent acquisition container, set by
