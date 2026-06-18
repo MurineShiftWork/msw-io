@@ -4,11 +4,6 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
-    inputs:
-      publish_only:
-        description: 'Skip version bump and publish the current VERSION tag'
-        type: boolean
-        default: false
 
 permissions:
   contents: write
@@ -20,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     if: "!startsWith(github.event.head_commit.message, 'bump:')"
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -35,10 +30,9 @@ jobs:
 
       - name: Bump version
         id: bump
-        if: inputs.publish_only != true
         run: |
           uvx --from commitizen cz bump --yes || EXIT=$?
-          if [ "${EXIT:-0}" -eq 21 ]; then
+          if [ "${EXIT:-0}" -eq 21 ] || [ "${EXIT:-0}" -eq 6 ]; then
             echo "No bumpable commits since last tag — skipping."
             echo "skipped=true" >> "$GITHUB_OUTPUT"
             exit 0
@@ -49,22 +43,15 @@ jobs:
           git push origin "v${VERSION}"
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
 
-      - name: Read version (publish-only mode)
-        id: read_version
-        if: inputs.publish_only == true
-        run: |
-          VERSION=$(cat VERSION)
-          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
-
       - name: Build
         if: steps.bump.outputs.skipped != 'true'
         run: uv build
 
       - name: Create GitHub release
-        if: steps.bump.outputs.skipped != 'true' && inputs.publish_only != true
+        if: steps.bump.outputs.skipped != 'true'
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: "v${{ steps.bump.outputs.version || steps.read_version.outputs.version }}"
+          tag_name: "v${{ steps.bump.outputs.version }}"
           files: dist/*
           generate_release_notes: false
 
