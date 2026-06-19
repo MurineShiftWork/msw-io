@@ -12,4 +12,4 @@ project_name: msw-io
 project_slug: msw_io
 python_requires: '3.10'
 year: '2026'
-test_on_windows: false
+test_on_windows: true
