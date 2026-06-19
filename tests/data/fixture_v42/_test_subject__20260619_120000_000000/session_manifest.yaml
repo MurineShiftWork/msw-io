@@ -1,0 +1,9 @@
+msw_manifest_version: 1
+msw_namespace_version: '4.2'
+type: session
+session_name: _test_subject__20260619_120000_000000
+acquisitions:
+- basename: _test_subject__20260619_120000_000000__sequence__v1
+  started_at: '2026-06-19T12:00:00+00:00'
+  ended_at: '2026-06-19T12:00:05+00:00'
+  status: complete

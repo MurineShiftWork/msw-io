@@ -117,7 +117,11 @@ def _read_session_yaml(session_dir: Path, fmt: dict) -> dict:
         else:
             logging.debug("session_yaml reader: unrecognised key %r: %s", k, v)
 
-    manifest_path = session_dir / "session_manifest.yaml"
+    # Subprotocols live in the acquisition dir's acquisition_manifest.yaml
+    # (v4.2+). Pre-swap sessions held them in session_manifest.yaml; fall back.
+    manifest_path = session_dir / "acquisition_manifest.yaml"
+    if not manifest_path.exists():
+        manifest_path = session_dir / "session_manifest.yaml"
     if manifest_path.exists():
         manifest = yaml.safe_load(manifest_path.read_text()) or {}
         subprotocols = manifest.get("subprotocols", [])

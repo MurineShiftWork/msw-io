@@ -1,0 +1,17 @@
+msw_format_version: 2
+process:
+  msw_version: 2.15.1
+  git_commit: ''
+  task: sequence
+  subject: _test_subject
+  setup: setup-test
+  session_folder: /mnt/data/data/_test_subject/_test_subject__20260619_120000_000000/_test_subject__20260619_120000_000000__sequence__v1
+  session_basename: _test_subject__20260619_120000_000000__sequence__v1
+  datetime: '20260619_120000_000000'
+  namespace_version: '4.2'
+  acq_type: sequence
+  acq_version: 1
+  session_type: ''
+  host_session_name: _test_subject__20260619_120000_000000
+task_settings:
+  n_max_trials: 2

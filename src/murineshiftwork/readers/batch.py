@@ -129,11 +129,17 @@ def load_acquisition(acquisition_dir) -> list[MswSession]:
     acquisition_dir = Path(acquisition_dir)
     acquisition_name = acquisition_dir.name
 
-    manifest_path = acquisition_dir / "acquisition_manifest.yaml"
+    # The container's child list lives in session_manifest.yaml under
+    # "acquisitions" (v4.2+). Pre-swap containers used acquisition_manifest.yaml
+    # under "sessions"; fall back for backward compatibility.
+    manifest_path = acquisition_dir / "session_manifest.yaml"
+    if not manifest_path.exists():
+        manifest_path = acquisition_dir / "acquisition_manifest.yaml"
     if manifest_path.exists():
         manifest = yaml.safe_load(manifest_path.read_text()) or {}
+        entries = manifest.get("acquisitions") or manifest.get("sessions") or []
         session_dirs = []
-        for s in manifest.get("sessions", []):
+        for s in entries:
             name = s.get("basename") or s.get("session_dir")
             if name:
                 d = acquisition_dir / name

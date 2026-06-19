@@ -132,6 +132,47 @@ def test_validate_namespace_non_msw_dir(tmp_path):
 
 
 # ---------------------------------------------------------------------------
+# identify_namespace_version: legacy-identification decision tree
+
+
+def test_detect_format_exposes_spec_version_keys():
+    from murineshiftwork.readers.namespace import detect_session_format
+
+    result = detect_session_format(_dir("fixture_sequence"))
+    assert "namespace_spec_version" in result
+    assert "namespace_spec_source" in result
+
+
+@pytest.mark.parametrize("fixture,ns,af", FIXTURE_EXPECTATIONS, ids=_FIXTURE_IDS)
+def test_identify_inferred_for_unstamped_fixtures(fixture, ns, af):
+    # Fixtures predate metadata stamping, so version is structurally inferred.
+    from murineshiftwork.readers.namespace import identify_namespace_version
+
+    r = identify_namespace_version(_dir(fixture))
+    assert r["source"] == "inferred"
+    expected = "legacy" if ns == NAMESPACE_LEGACY else "4.1"
+    assert r["spec_version"] == expected
+
+
+def test_identify_prefers_stamped_metadata(tmp_path):
+    # A versioned acquisition dir whose session.yaml stamps a spec version is
+    # identified from metadata, overriding structural inference.
+    from murineshiftwork.readers.namespace import identify_namespace_version
+
+    acq = tmp_path / "m01__20260619_083211_759509__sequence__v1"
+    acq.mkdir()
+    base = acq / acq.name
+    base.with_suffix(".msw.df.jsonl").write_text("")
+    (acq / f"{acq.name}.msw.session.yaml").write_text(
+        "msw_format_version: 2\nprocess:\n  namespace_version: '4.2'\n"
+    )
+    r = identify_namespace_version(acq)
+    assert r["source"] == "metadata"
+    assert r["spec_version"] == "4.2"
+    assert r["acq_version"] == 1
+
+
+# ---------------------------------------------------------------------------
 # Artifact format constants are distinct strings
 
 
