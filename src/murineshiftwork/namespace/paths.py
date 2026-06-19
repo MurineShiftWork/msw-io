@@ -274,7 +274,7 @@ def generate_session_paths(
     task: str,
     basepath: str | Path,
     acq_type: str = "msw",
-    acq_version: int | None = None,
+    acq_version: int | None = 1,
     session_type: str | None = None,
     version: str = CURRENT_NAMESPACE_VERSION,
     default_subject: str = "_test_subject",
@@ -299,8 +299,10 @@ def generate_session_paths(
         acq_type: Acquisition type identifier (``"msw"``, ``"pxi"``,
             ``"photo"``, ``"video_rce"``, ``"video_flir"``). Default ``"msw"``.
         acq_version: Integer format version appended as ``__vN`` on the
-            acquisition basename. ``None`` omits the version component (e.g.
-            for ``pxi``). Version is at the acquisition level, not session.
+            acquisition basename. Defaults to ``1`` so MSW writes always carry a
+            version. Pass ``None`` to omit the version component for external,
+            unversioned acquisition types (e.g. ``pxi``). Version is at the
+            acquisition level, not the session container.
         session_type: Optional task-type label appended to the session
             container: ``subject__datetime__session_type``.
         version: Datetime precision format -- ``"v1"`` (default) or
@@ -315,7 +317,8 @@ def generate_session_paths(
 
     Returns:
         Dict with keys: ``subject``, ``datetime``, ``task``, ``acq_type``,
-        ``acq_version``, ``basepath``, ``namespace_version``,
+        ``acq_version``, ``basepath``, ``namespace_version`` (datetime
+        precision), ``namespace_spec_version`` (spec semver, e.g. ``"4.2"``),
         ``host_session_name``, ``acquisition_name``, ``session_basename``,
         ``session_folder``, ``session_folder_relative``, ``session_file_path``.
     """
@@ -338,19 +341,22 @@ def generate_session_paths(
         else datetime.now().strftime(_NAMESPACE_FORMATS[version])
     )
 
-    # --- Session container ---
+    builder = get_msw_builder()
+
+    # --- Session container (session level) ---
     if linked_to:
         session_container = linked_to
-    elif session_type:
-        session_container = f"{subject}__{dt}__{session_type}"
     else:
-        session_container = f"{subject}__{dt}"
+        _sess_values = {"subject": subject, "datetime": dt}
+        if session_type:
+            _sess_values["session_type"] = session_type
+        session_container = builder.build_path("session", _sess_values)
 
-    # --- Acquisition basename ---
+    # --- Acquisition basename (acquisition level) ---
+    _acq_values = {"subject": subject, "datetime": dt, "acq_type": acq_type}
     if acq_version is not None:
-        session_basename = f"{subject}__{dt}__{acq_type}__v{acq_version}"
-    else:
-        session_basename = f"{subject}__{dt}__{acq_type}"
+        _acq_values["version"] = str(acq_version)
+    session_basename = builder.build_path("acquisition", _acq_values)
 
     session_folder = basepath / subject / session_container / session_basename
 
@@ -362,6 +368,7 @@ def generate_session_paths(
         "acq_version": acq_version,
         "basepath": basepath,
         "namespace_version": version,
+        "namespace_spec_version": builder.spec.version,
         "host_session_name": session_container,
         "acquisition_name": session_basename,
         "session_basename": session_basename,

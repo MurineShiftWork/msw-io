@@ -44,9 +44,11 @@ def test_v1_basename_structure():
         "mouse_01", "flush", "/data", version=NAMESPACE_V1, printout=False
     )
     parts = paths["session_basename"].split("__")
-    assert len(parts) == 3
+    # v4.2: subject__datetime__acq_type__vN (version default 1)
+    assert len(parts) == 4
     assert parts[0] == "mouse_01"
     assert parts[2] == "msw"  # acq_type, not task name
+    assert parts[3] == "v1"
 
 
 def test_v1_datetime_has_microseconds():
@@ -127,7 +129,8 @@ def test_sibling_acquisition_shares_datetime_via_datetime_str():
     )
     assert video_paths["datetime"] == msw_paths["datetime"]
     assert video_paths["host_session_name"] == msw_paths["host_session_name"]
-    expected = f"mouse_01__{msw_paths['datetime']}__video_flir"
+    # video_flir is a sibling acquisition and also carries the default version.
+    expected = f"mouse_01__{msw_paths['datetime']}__video_flir__v1"
     assert video_paths["session_basename"] == expected
 
 

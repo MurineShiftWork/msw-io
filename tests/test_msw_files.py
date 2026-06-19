@@ -18,7 +18,7 @@ def test_msw_yaml_loads():
     from acquisition_namespace import NamespaceBuilder
 
     b = NamespaceBuilder.from_yaml(_NAMESPACE_DIR / "namespace.msw.yaml")
-    assert b.spec.version == "4.1"
+    assert b.spec.version == "4.2"
     assert b.hierarchy == ["subject", "session", "acquisition", "file"]
     assert "acquisition" not in b.optional_levels
 
@@ -74,6 +74,30 @@ def test_build_file_path_roundtrip(artifact):
     extracted = b.extract_level_values("file", fname)
     assert extracted["artifact"] == artifact
     assert extracted["acquisition"] == "mouse_01__20260524_143022_123456__msw"
+
+
+@pytest.mark.parametrize(
+    ("name", "acq_type", "version"),
+    [
+        ("m01__20260524_143022_123456__sequence__v1", "sequence", "1"),
+        ("m01__20260524_143022_123456__sequence", "sequence", None),
+        ("m01__20260524_143022_123456__video_flir__v2", "video_flir", "2"),
+        ("m01__20260524_143022_123456__video_flir", "video_flir", None),
+        (
+            "_t__20260524_143022_123456___test_minimal_task__v1",
+            "_test_minimal_task",
+            "1",
+        ),
+    ],
+)
+def test_acquisition_regex_splits_optional_version(name, acq_type, version):
+    # acq_type is lazy + end-anchored so a trailing __v{n} is not swallowed
+    # (\w includes underscore). Both versioned and unversioned names parse.
+    from murineshiftwork.namespace.paths import get_msw_builder
+
+    v = get_msw_builder().extract_level_values("acquisition", name)
+    assert v["acq_type"] == acq_type
+    assert v.get("version") == version
 
 
 def test_build_file_legacy_datetime():
@@ -158,10 +182,26 @@ def test_generate_session_paths_v4_structure(tmp_path):
         printout=False,
     )
     assert paths["acq_type"] == "msw"
-    assert paths["acq_version"] is None
+    assert paths["acq_version"] == 1  # version written by default
     assert "mouse_01" in paths["session_folder"]
-    assert paths["session_basename"].endswith("__msw")
+    assert paths["session_basename"].endswith("__msw__v1")
     assert "__" not in paths["subject"]
+
+
+def test_generate_session_paths_no_version_when_explicit_none(tmp_path):
+    from murineshiftwork.namespace.paths import generate_session_paths
+
+    # External/unversioned acquisition types pass acq_version=None to opt out.
+    paths = generate_session_paths(
+        subject="mouse_01",
+        task="t",
+        basepath=tmp_path,
+        acq_type="pxi",
+        acq_version=None,
+        printout=False,
+    )
+    assert paths["session_basename"].endswith("__pxi")
+    assert not paths["session_basename"].endswith("__v1")
 
 
 def test_generate_session_paths_with_version(tmp_path):
