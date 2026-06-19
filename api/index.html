@@ -3179,7 +3179,7 @@ sessions that predate v4.1 naming.</p>
 
 
 <h2 id="murineshiftwork.namespace.paths.generate_session_paths" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">murineshiftwork</span><span class="o">.</span><span class="n">namespace</span><span class="o">.</span><span class="n">paths</span><span class="o">.</span><span class="n">generate_session_paths</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">basepath</span><span class="p">,</span> <span class="n">acq_type</span><span class="o">=</span><span class="s1">&#39;msw&#39;</span><span class="p">,</span> <span class="n">acq_version</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">session_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="n">CURRENT_NAMESPACE_VERSION</span><span class="p">,</span> <span class="n">default_subject</span><span class="o">=</span><span class="s1">&#39;_test_subject&#39;</span><span class="p">,</span> <span class="n">linked_to</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">datetime_str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">printout</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">murineshiftwork</span><span class="o">.</span><span class="n">namespace</span><span class="o">.</span><span class="n">paths</span><span class="o">.</span><span class="n">generate_session_paths</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">basepath</span><span class="p">,</span> <span class="n">acq_type</span><span class="o">=</span><span class="s1">&#39;msw&#39;</span><span class="p">,</span> <span class="n">acq_version</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">session_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="n">CURRENT_NAMESPACE_VERSION</span><span class="p">,</span> <span class="n">default_subject</span><span class="o">=</span><span class="s1">&#39;_test_subject&#39;</span><span class="p">,</span> <span class="n">linked_to</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">datetime_str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">printout</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></code>
 
 <a href="#murineshiftwork.namespace.paths.generate_session_paths" class="headerlink" title="Permanent link">&para;</a></h2>
 
@@ -3281,12 +3281,14 @@ part of the v4 path structure.</p>
             <td>
               <div class="doc-md-description">
                 <p>Integer format version appended as <code>__vN</code> on the
-acquisition basename. <code>None</code> omits the version component (e.g.
-for <code>pxi</code>). Version is at the acquisition level, not session.</p>
+acquisition basename. Defaults to <code>1</code> so MSW writes always carry a
+version. Pass <code>None</code> to omit the version component for external,
+unversioned acquisition types (e.g. <code>pxi</code>). Version is at the
+acquisition level, not the session container.</p>
               </div>
             </td>
             <td>
-                  <code>None</code>
+                  <code>1</code>
             </td>
           </tr>
           <tr class="doc-section-item">
@@ -3419,7 +3421,17 @@ basenames share the same timestamp.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p><code>acq_version</code>, <code>basepath</code>, <code>namespace_version</code>,</p>
+                <p><code>acq_version</code>, <code>basepath</code>, <code>namespace_version</code> (datetime</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="dict">dict</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>precision), <code>namespace_spec_version</code> (spec semver, e.g. <code>"4.2"</code>),</p>
               </div>
             </td>
           </tr>
