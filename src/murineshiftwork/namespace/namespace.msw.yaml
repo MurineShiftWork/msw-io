@@ -1,4 +1,4 @@
-version: "4.1"
+version: "4.2"
 description: "MSW acquisition namespace: subject > session > acquisition > file."
 hierarchy:
   - subject
@@ -31,9 +31,12 @@ levels:
     regex: "(?P<subject>[\\w\\-]+)__(?P<datetime>\\d{8}_\\d{6}(?:_\\d{6})?)(?:__(?P<session_type>[\\w\\-]+))?"
     optional_fields: [session_type]
   acquisition:
-    template: "{subject}__{datetime}__{acq_type}"
-    regex: "(?P<subject>[\\w\\-]+)__(?P<datetime>\\d{8}_\\d{6}(?:_\\d{6})?)__(?P<acq_type>[\\w\\-]+)"
-    optional_fields: []
+    template: "{subject}__{datetime}__{acq_type}__v{version}"
+    # acq_type is lazy and the segment is end-anchored so an optional trailing
+    # __v{n} is split off as `version` instead of being swallowed by acq_type
+    # (\w includes underscore, so a greedy acq_type would eat "__v1").
+    regex: "(?P<subject>[\\w\\-]+)__(?P<datetime>\\d{8}_\\d{6}(?:_\\d{6})?)__(?P<acq_type>[\\w\\-]+?)(?:__v(?P<version>\\d+))?$"
+    optional_fields: [version]
   file:
     template: "{acquisition}.msw.{artifact}"
     regex: "(?P<acquisition>.+)\\.msw\\.(?P<artifact>.+)"

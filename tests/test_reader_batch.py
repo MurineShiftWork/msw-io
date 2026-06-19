@@ -208,6 +208,42 @@ def test_load_acquisition_uses_manifest_basename_key(tmp_path):
     assert sessions[0].subject == "_test_subject"
 
 
+# ---------------------------------------------------------------------------
+# v4.2 nested layout: container (session_manifest.yaml, key "acquisitions") ->
+# versioned acquisition dir (acquisition_manifest.yaml) -> .msw artifacts.
+
+_V42_CONTAINER = "fixture_v42/_test_subject__20260619_120000_000000"
+_V42_ACQ = _V42_CONTAINER + "/_test_subject__20260619_120000_000000__sequence__v1"
+
+
+def test_v42_load_session_parses_versioned_acquisition():
+    from murineshiftwork.readers import load_session
+
+    s = load_session(_skip_if_absent(FIXTURES_DIR / _V42_ACQ))
+    assert s.subject == "_test_subject"
+    assert s.acq_type == "sequence"
+    assert s.namespace_version is not None
+    assert s.df is not None and len(s.df) == 2
+
+
+def test_v42_load_acquisition_reads_session_manifest():
+    # The container's child list lives in session_manifest.yaml / "acquisitions".
+    from murineshiftwork.readers import load_acquisition
+
+    sessions = load_acquisition(_skip_if_absent(FIXTURES_DIR / _V42_CONTAINER))
+    assert len(sessions) == 1
+    assert sessions[0].acq_type == "sequence"
+
+
+def test_v42_identified_from_stamped_metadata():
+    from murineshiftwork.readers.namespace import identify_namespace_version
+
+    r = identify_namespace_version(_skip_if_absent(FIXTURES_DIR / _V42_ACQ))
+    assert r["source"] == "metadata"
+    assert r["spec_version"] == "4.2"
+    assert r["acq_version"] == 1
+
+
 def test_load_acquisition_manifest_session_dir_key_backward_compat(tmp_path):
     """acquisition_manifest.yaml with legacy 'session_dir' key is still read."""
     import yaml

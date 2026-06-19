@@ -1,10 +1,14 @@
-"""Acquisition and session manifest writers.
+"""Session and acquisition manifest writers.
 
-Manifests are YAML files written progressively during a session:
-  acquisition_manifest.yaml : inside the acquisition dir; lists sessions
-  session_manifest.yaml     : inside the session dir; lists subprotocols (opto) or empty
+Manifests are YAML files written progressively during a session, aligned with
+the namespace hierarchy (subject > session > acquisition > file):
 
-All write operations are atomic (write temp file, rename).
+  session_manifest.yaml     : in the session container; lists acquisitions
+  acquisition_manifest.yaml : in the acquisition dir; lists subprotocols (opto)
+
+All write operations are atomic (write temp file, rename). Each manifest is
+stamped with ``msw_namespace_version`` (the current spec semver) so a directory
+can be identified without relying on its name surviving intact.
 """
 
 from datetime import UTC, datetime
@@ -16,6 +20,13 @@ import yaml
 
 def _now_iso() -> str:
     return datetime.now(UTC).isoformat(timespec="seconds")
+
+
+def _namespace_version() -> str:
+    """Return the current namespace spec semver (e.g. ``"4.2"``)."""
+    from murineshiftwork.namespace.paths import get_msw_builder
+
+    return get_msw_builder().spec.version
 
 
 def _read_yaml(path: Path) -> dict:
@@ -32,44 +43,48 @@ def _write_yaml(path: Path, data: dict) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Acquisition manifest
+# Session manifest: lives in the session container; lists acquisitions.
 
 
-def init_acquisition_manifest(
-    acquisition_folder: str | Path, acquisition_name: str
-) -> None:
-    """Create acquisition_manifest.yaml if it does not exist."""
-    p = Path(acquisition_folder) / "acquisition_manifest.yaml"
+def init_session_manifest(session_container: str | Path, session_name: str) -> None:
+    """Create session_manifest.yaml in the session container if absent."""
+    p = Path(session_container) / "session_manifest.yaml"
     if p.exists():
         return
     _write_yaml(
         p,
         {
             "msw_manifest_version": 1,
-            "type": "acquisition",
-            "acquisition_name": acquisition_name,
-            "sessions": [],
+            "msw_namespace_version": _namespace_version(),
+            "type": "session",
+            "session_name": session_name,
+            "acquisitions": [],
         },
     )
 
 
-def append_session_to_acquisition(
-    acquisition_folder: str | Path,
-    session_basename: str,
+def append_acquisition_to_session(
+    session_container: str | Path,
+    acquisition_basename: str,
     started_at: str | None = None,
 ) -> None:
-    """Add a session entry (status=running). Call at TaskProcess init."""
-    p = Path(acquisition_folder) / "acquisition_manifest.yaml"
+    """Add an acquisition entry (status=running). Call at TaskProcess init."""
+    p = Path(session_container) / "session_manifest.yaml"
     data: dict[str, Any] = (
         _read_yaml(p)
         if p.exists()
-        else {"msw_manifest_version": 1, "type": "acquisition", "sessions": []}
+        else {
+            "msw_manifest_version": 1,
+            "msw_namespace_version": _namespace_version(),
+            "type": "session",
+            "acquisitions": [],
+        }
     )
-    sessions = data.setdefault("sessions", [])
-    if not any(s.get("basename") == session_basename for s in sessions):
-        sessions.append(
+    acquisitions = data.setdefault("acquisitions", [])
+    if not any(a.get("basename") == acquisition_basename for a in acquisitions):
+        acquisitions.append(
             {
-                "basename": session_basename,
+                "basename": acquisition_basename,
                 "started_at": started_at or _now_iso(),
                 "ended_at": None,
                 "status": "running",
@@ -78,57 +93,65 @@ def append_session_to_acquisition(
     _write_yaml(p, data)
 
 
-def finalize_session_in_acquisition(
-    acquisition_folder: str | Path,
-    session_basename: str,
+def finalize_acquisition_in_session(
+    session_container: str | Path,
+    acquisition_basename: str,
     status: str = "complete",
     ended_at: str | None = None,
 ) -> None:
-    """Set status and ended_at. Call at TaskProcess exit."""
-    p = Path(acquisition_folder) / "acquisition_manifest.yaml"
+    """Set status and ended_at on an acquisition entry. Call at TaskProcess exit."""
+    p = Path(session_container) / "session_manifest.yaml"
     if not p.exists():
         return
     data = _read_yaml(p)
-    for s in data.get("sessions", []):
-        if s.get("basename") == session_basename:
-            s["status"] = status
-            s["ended_at"] = ended_at or _now_iso()
+    for a in data.get("acquisitions", []):
+        if a.get("basename") == acquisition_basename:
+            a["status"] = status
+            a["ended_at"] = ended_at or _now_iso()
             break
     _write_yaml(p, data)
 
 
 # ---------------------------------------------------------------------------
-# Session manifest
+# Acquisition manifest: lives in the acquisition dir; lists subprotocols.
 
 
-def init_session_manifest(session_folder: str | Path, session_basename: str) -> None:
-    """Write session_manifest.yaml with empty subprotocols. Call at session start."""
-    p = Path(session_folder) / "session_manifest.yaml"
+def init_acquisition_manifest(
+    acquisition_folder: str | Path, acquisition_name: str
+) -> None:
+    """Create acquisition_manifest.yaml in the acquisition dir if absent."""
+    p = Path(acquisition_folder) / "acquisition_manifest.yaml"
     if p.exists():
         return
     _write_yaml(
         p,
         {
             "msw_manifest_version": 1,
-            "type": "session",
-            "session_basename": session_basename,
+            "msw_namespace_version": _namespace_version(),
+            "type": "acquisition",
+            "acquisition_name": acquisition_name,
             "subprotocols": [],
         },
     )
 
 
 def append_subprotocol(
-    session_folder: str | Path,
+    acquisition_folder: str | Path,
     name: str,
     filename: str,
     barcode_start: int | None = None,
 ) -> None:
     """Add a subprotocol entry (status=running). Call before each opto protocol."""
-    p = Path(session_folder) / "session_manifest.yaml"
+    p = Path(acquisition_folder) / "acquisition_manifest.yaml"
     data: dict[str, Any] = (
         _read_yaml(p)
         if p.exists()
-        else {"msw_manifest_version": 1, "type": "session", "subprotocols": []}
+        else {
+            "msw_manifest_version": 1,
+            "msw_namespace_version": _namespace_version(),
+            "type": "acquisition",
+            "subprotocols": [],
+        }
     )
     protos = data.setdefault("subprotocols", [])
     if not any(sp.get("name") == name for sp in protos):
@@ -145,13 +168,13 @@ def append_subprotocol(
 
 
 def finalize_subprotocol(
-    session_folder: str | Path,
+    acquisition_folder: str | Path,
     name: str,
     barcode_end: int | None = None,
     status: str = "complete",
 ) -> None:
     """Set barcode_end and status. Call in finally block after each opto protocol."""
-    p = Path(session_folder) / "session_manifest.yaml"
+    p = Path(acquisition_folder) / "acquisition_manifest.yaml"
     if not p.exists():
         return
     data = _read_yaml(p)

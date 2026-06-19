@@ -94,6 +94,95 @@ def detect_artifact_format(session_dir: Path) -> str:
     return ARTIFACT_FORMAT_LEGACY
 
 
+def _read_namespace_version_from_metadata(session_dir: Path) -> str | None:
+    """Return the authoritative spec version written into the session, or None.
+
+    Checks the self-describing sinks written at acquisition time (v4.2+):
+    the ``.msw.session.yaml`` ``process.namespace_version`` field first, then
+    the ``msw_namespace_version`` key of either manifest. Returns None when the
+    session predates metadata stamping (its version must be inferred).
+    """
+    import yaml
+
+    for f in session_dir.glob("*.msw.session.yaml"):
+        try:
+            payload = yaml.safe_load(f.read_text()) or {}
+        except Exception:
+            continue
+        ver = (payload.get("process") or {}).get("namespace_version")
+        if ver:
+            return str(ver)
+    for manifest_name in ("acquisition_manifest.yaml", "session_manifest.yaml"):
+        p = session_dir / manifest_name
+        if p.exists():
+            try:
+                data = yaml.safe_load(p.read_text()) or {}
+            except Exception:
+                continue
+            ver = data.get("msw_namespace_version")
+            if ver:
+                return str(ver)
+    return None
+
+
+def identify_namespace_version(session_dir: Path) -> dict:
+    """Decision tree identifying a session's namespace generation.
+
+    Resolution order, most authoritative first:
+
+    1. ``namespace_version`` stamped in session.yaml / a manifest -> use verbatim
+       (``source="metadata"``). This is the only path for v4.2+ sessions.
+    2. Structural inference from the acquisition basename (``source="inferred"``):
+
+       - acquisition carries a ``__v{n}`` suffix            -> ``"4.2"``
+       - typed ``acq_type`` (msw/pxi/photo/video_*), no ver -> ``"4.1"``
+       - 3-component, task-named, microsecond datetime      -> ``"4.1"``
+       - second-precision datetime                          -> ``"legacy"``
+       - basename does not parse                             -> ``"unknown"``
+
+    Returns ``{spec_version, source, acq_type, acq_version, is_legacy}``.
+    """
+    from murineshiftwork.namespace.paths import parse_acquisition_basename
+
+    session_dir = Path(session_dir)
+    stamped = _read_namespace_version_from_metadata(session_dir)
+    basename = _infer_session_basename(session_dir) or session_dir.name
+
+    acq_type = acq_version = None
+    is_legacy = False
+    inferred = "unknown"
+    try:
+        info = parse_acquisition_basename(basename)
+        acq_type = info["acq_type"]
+        acq_version = info["acq_version"]
+        if info["acq_version"] is not None:
+            inferred = "4.2"
+        elif info["namespace_version"] == "legacy":  # second-precision datetime
+            inferred = "legacy"
+            is_legacy = True
+        else:
+            inferred = "4.1"
+            is_legacy = info["is_legacy_acquisition"]
+    except ValueError:
+        inferred = "unknown"
+
+    if stamped:
+        return {
+            "spec_version": stamped,
+            "source": "metadata",
+            "acq_type": acq_type,
+            "acq_version": acq_version,
+            "is_legacy": False,
+        }
+    return {
+        "spec_version": inferred,
+        "source": "inferred",
+        "acq_type": acq_type,
+        "acq_version": acq_version,
+        "is_legacy": is_legacy,
+    }
+
+
 def detect_session_format(session_dir: Path) -> dict:
     """Detect namespace version and artifact format for a session directory."""
     from murineshiftwork.namespace.paths import parse_session_basename
@@ -111,9 +200,13 @@ def detect_session_format(session_dir: Path) -> dict:
         namespace_version = None
         parse_error = str(exc)
 
+    ident = identify_namespace_version(session_dir)
+
     return {
         "basename": basename,
         "namespace_version": namespace_version,
+        "namespace_spec_version": ident["spec_version"],
+        "namespace_spec_source": ident["source"],
         "artifact_format": artifact_format,
         "parse_error": parse_error,
     }
