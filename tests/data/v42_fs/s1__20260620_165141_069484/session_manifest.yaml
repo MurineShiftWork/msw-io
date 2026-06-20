@@ -1,0 +1,9 @@
+msw_manifest_version: 1
+msw_namespace_version: '4.2'
+type: session
+session_name: s1__20260620_165141_069484
+acquisitions:
+- basename: s1__20260620_165141_069484__probabilistic_switching_fixedsubjects__v1
+  started_at: '2026-06-20T15:51:41+00:00'
+  ended_at: '2026-06-20T15:51:41+00:00'
+  status: complete
