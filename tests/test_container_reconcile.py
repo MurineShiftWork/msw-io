@@ -108,3 +108,30 @@ def test_load_acquisition_skips_camera_dirs(tmp_path):
     assert all("video_flir" not in s.acquisition_name for s in sessions if s)
     # only a camera dir present -> no behavioural sessions
     assert sessions == []
+
+
+def test_load_acquisition_skips_unknown_dirs(tmp_path):
+    # a __-named dir with no recognised MSW files is not an acquisition: it is
+    # skipped (not attempted, no error), while a real one alongside still loads.
+    _mk_acq_dir(tmp_path, _BEHAV)  # empty: no recognised files
+    (tmp_path / "stray__not__an__acq").mkdir()
+    sessions = load_acquisition(tmp_path)
+    assert sessions == []  # neither dir holds recognised files
+
+
+def test_enumerate_classifies_legacy_dir_with_files_as_behaviour(tmp_path):
+    # a dir whose name does not parse but which holds a recognised (legacy)
+    # file is a behavioural acquisition, not unknown.
+    legacy = tmp_path / "mouse_2024_session_01"
+    legacy.mkdir()
+    (legacy / "switching.pkl").write_bytes(b"\x00")  # legacy marker
+    infos = {i.basename: i for i in enumerate_acquisitions(tmp_path)}
+    assert infos["mouse_2024_session_01"].kind == "behaviour"
+    assert infos["mouse_2024_session_01"].acq_type == ""
+
+
+def test_enumerate_marks_empty_dir_unknown(tmp_path):
+    stray = tmp_path / "stray__dir"
+    stray.mkdir()  # no recognised files, does not parse
+    infos = {i.basename: i for i in enumerate_acquisitions(tmp_path)}
+    assert infos["stray__dir"].kind == "unknown"

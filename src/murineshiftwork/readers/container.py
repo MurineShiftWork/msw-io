@@ -30,6 +30,7 @@ from murineshiftwork.readers.camera import (
     _BACKENDS,
     load_camera_acquisition,
 )
+from murineshiftwork.readers.namespace import test_is_recognized_msw_file
 
 log = logging.getLogger(__name__)
 
@@ -79,12 +80,32 @@ class SessionContainerReport:
         return not self.on_disk_not_in_manifest and not self.in_manifest_not_on_disk
 
 
-def _classify(acq_type: str) -> tuple[str, str | None]:
-    """Map an acq_type to (kind, backend)."""
+def _has_recognized_files(directory: Path) -> bool:
+    """True if the dir holds any recognised MSW file (current or legacy)."""
+    try:
+        return any(
+            test_is_recognized_msw_file(f) for f in directory.iterdir() if f.is_file()
+        )
+    except (PermissionError, OSError):
+        return False
+
+
+def _classify(acq_type: str, path: Path | None) -> tuple[str, str | None]:
+    """Map an acquisition to (kind, backend).
+
+    Primary signal is the parsed ``acq_type`` (namespace validation). A dir that
+    does not parse but holds recognised MSW files is a legacy behavioural
+    acquisition (still readable); only a dir that neither parses nor holds
+    recognised files is ``unknown``.
+    """
     for prefix, backend in _BACKENDS.items():
         if acq_type.startswith(prefix):
             return "camera", backend
-    return ("behaviour", None) if acq_type else ("unknown", None)
+    if acq_type:
+        return "behaviour", None
+    if path is not None and _has_recognized_files(path):
+        return "behaviour", None
+    return "unknown", None
 
 
 def _acq_type_of(basename: str) -> str:
@@ -112,9 +133,16 @@ def _manifest_index(container: Path) -> dict[str, dict]:
 
 
 def _disk_acquisition_dirs(container: Path) -> dict[str, Path]:
-    """basename -> dir for every ``__``-separated child directory on disk."""
+    """basename -> dir for every acquisition-looking child directory on disk.
+
+    A child counts if its name uses the ``__`` namespace separator OR it holds
+    recognised MSW files (current or legacy). The content check keeps legacy
+    acquisitions whose names predate the ``__`` convention discoverable.
+    """
     return {
-        d.name: d for d in sorted(container.iterdir()) if d.is_dir() and "__" in d.name
+        d.name: d
+        for d in sorted(container.iterdir())
+        if d.is_dir() and ("__" in d.name or _has_recognized_files(d))
     }
 
 
@@ -135,7 +163,7 @@ def enumerate_acquisitions(container: str | Path) -> list[AcquisitionInfo]:
     infos: list[AcquisitionInfo] = []
     for basename in sorted(set(disk) | set(manifest)):
         acq_type = _acq_type_of(basename)
-        kind, backend = _classify(acq_type)
+        kind, backend = _classify(acq_type, disk.get(basename))
         entry = manifest.get(basename) or {}
         infos.append(
             AcquisitionInfo(

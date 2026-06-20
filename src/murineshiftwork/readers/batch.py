@@ -151,7 +151,13 @@ def load_acquisition(acquisition_dir) -> list[MswSession]:
                 seen.add(name)
                 session_dirs.append(acquisition_dir / name)
     for d in sorted(acquisition_dir.iterdir()):
-        if d.is_dir() and "__" in d.name and d.name not in seen:
+        # Discover by the __ namespace separator OR by recognised content, so
+        # legacy acquisitions whose names predate __ are still found.
+        if (
+            d.is_dir()
+            and d.name not in seen
+            and ("__" in d.name or _has_session_files(d))
+        ):
             seen.add(d.name)
             session_dirs.append(d)
 
@@ -161,6 +167,12 @@ def load_acquisition(acquisition_dir) -> list[MswSession]:
         # sessions; they load via readers.load_camera_acquisition. Skip them
         # here so they are not mis-read as empty MswSessions.
         if detect_camera_backend(sd) is not None:
+            continue
+        # Skip dirs with no recognised MSW files (current or legacy): they are
+        # not acquisitions, so do not attempt to read them. Every dir that does
+        # hold recognised files IS attempted, including legacy formats.
+        if not _has_session_files(sd):
+            log.debug("load_acquisition: skipping non-acquisition dir %s", sd)
             continue
         try:
             sess = load_session(
