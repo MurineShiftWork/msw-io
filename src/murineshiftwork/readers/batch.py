@@ -13,6 +13,7 @@ from pathlib import Path
 
 import yaml
 
+from murineshiftwork.readers.camera import detect_camera_backend
 from murineshiftwork.readers.models import MswSession
 from murineshiftwork.readers.session import read_session_data
 
@@ -130,29 +131,49 @@ def load_acquisition(acquisition_dir) -> list[MswSession]:
     acquisition_dir = Path(acquisition_dir)
     acquisition_name = acquisition_dir.name
 
-    # The container's child list lives in session_manifest.yaml under
-    # "acquisitions" (v4.2+). Pre-swap containers used acquisition_manifest.yaml
-    # under "sessions"; fall back for backward compatibility.
+    # Disk is the source of truth; the manifest is a metadata overlay that may
+    # be incomplete (old sessions predate camera registration, a crash can
+    # leave an acquisition unregistered). Union the manifest-listed dirs with
+    # every "__" child dir on disk so an unregistered acquisition is not
+    # dropped. The manifest still seeds order/known entries first.
+    session_dirs: list[Path] = []
+    seen: set[str] = set()
+
     manifest_path = acquisition_dir / "session_manifest.yaml"
     if not manifest_path.exists():
         manifest_path = acquisition_dir / "acquisition_manifest.yaml"
     if manifest_path.exists():
         manifest = yaml.safe_load(manifest_path.read_text()) or {}
         entries = manifest.get("acquisitions") or manifest.get("sessions") or []
-        session_dirs = []
         for s in entries:
             name = s.get("basename") or s.get("session_dir")
-            if name:
-                d = acquisition_dir / name
-                if d.is_dir():
-                    session_dirs.append(d)
-    else:
-        session_dirs = sorted(
-            d for d in acquisition_dir.iterdir() if d.is_dir() and "__" in d.name
-        )
+            if name and name not in seen and (acquisition_dir / name).is_dir():
+                seen.add(name)
+                session_dirs.append(acquisition_dir / name)
+    for d in sorted(acquisition_dir.iterdir()):
+        # Discover by the __ namespace separator OR by recognised content, so
+        # legacy acquisitions whose names predate __ are still found.
+        if (
+            d.is_dir()
+            and d.name not in seen
+            and ("__" in d.name or _has_session_files(d))
+        ):
+            seen.add(d.name)
+            session_dirs.append(d)
 
     sessions = []
     for sd in session_dirs:
+        # Camera acquisitions (video_flir/video_rce) are not behavioural
+        # sessions; they load via readers.load_camera_acquisition. Skip them
+        # here so they are not mis-read as empty MswSessions.
+        if detect_camera_backend(sd) is not None:
+            continue
+        # Skip dirs with no recognised MSW files (current or legacy): they are
+        # not acquisitions, so do not attempt to read them. Every dir that does
+        # hold recognised files IS attempted, including legacy formats.
+        if not _has_session_files(sd):
+            log.debug("load_acquisition: skipping non-acquisition dir %s", sd)
+            continue
         try:
             sess = load_session(
                 sd,
