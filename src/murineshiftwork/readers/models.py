@@ -70,6 +70,12 @@ class MswSession(BaseModel):
     # multi-protocol metadata (populated when session_manifest.yaml is present)
     subprotocols: list[dict] | None = None
 
+    # optional open metadata block: namespace-derived vars plus, for data
+    # ingested from outside the suite, provenance like a legacy source flag
+    # (``source: legacy_matlab``) and the original/legacy subject id. None on
+    # native sessions that carry no metadata.
+    metadata: dict[str, Any] | None = None
+
     # flags
     is_complete: bool
     is_ephys: bool
@@ -103,6 +109,7 @@ class MswSession(BaseModel):
             "settings_stage": self.settings_stage,
             "settings_ephys": self.settings_ephys,
             "subprotocols": self.subprotocols,
+            "metadata": self.metadata,
             "is_complete": self.is_complete,
             "is_ephys": self.is_ephys,
             "acquisition_name": self.acquisition_name,

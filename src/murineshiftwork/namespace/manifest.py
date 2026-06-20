@@ -117,22 +117,80 @@ def finalize_acquisition_in_session(
 
 
 def init_acquisition_manifest(
-    acquisition_folder: str | Path, acquisition_name: str
+    acquisition_folder: str | Path,
+    acquisition_name: str,
+    metadata: dict[str, Any] | None = None,
 ) -> None:
-    """Create acquisition_manifest.yaml in the acquisition dir if absent."""
+    """Create acquisition_manifest.yaml in the acquisition dir if absent.
+
+    Args:
+        acquisition_folder: Acquisition directory.
+        acquisition_name: Acquisition basename.
+        metadata: Optional open provenance block written under ``metadata``
+            (e.g. ``{"source": "legacy_matlab", "legacy_subject": "..."}``).
+    """
     p = Path(acquisition_folder) / "acquisition_manifest.yaml"
     if p.exists():
         return
-    _write_yaml(
-        p,
-        {
-            "msw_manifest_version": 1,
-            "msw_namespace_version": _namespace_version(),
-            "type": "acquisition",
-            "acquisition_name": acquisition_name,
-            "subprotocols": [],
-        },
-    )
+    data: dict[str, Any] = {
+        "msw_manifest_version": 1,
+        "msw_namespace_version": _namespace_version(),
+        "type": "acquisition",
+        "acquisition_name": acquisition_name,
+        "subprotocols": [],
+    }
+    if metadata:
+        data["metadata"] = dict(metadata)
+    _write_yaml(p, data)
+
+
+def set_manifest_metadata(manifest_path: str | Path, metadata: dict[str, Any]) -> None:
+    """Merge a metadata block into an existing manifest (creates the key if absent).
+
+    Use to stamp provenance (namespace vars, ``source`` flag, legacy ids) onto
+    a session_manifest.yaml or acquisition_manifest.yaml after creation.
+    """
+    p = Path(manifest_path)
+    data = _read_yaml(p) if p.exists() else {}
+    raw = data.get("metadata")
+    existing = raw if isinstance(raw, dict) else {}
+    data["metadata"] = {**existing, **metadata}
+    _write_yaml(p, data)
+
+
+def write_acquisition_manifest_for_ingest(
+    acquisition_folder: str | Path,
+    acquisition_name: str,
+    *,
+    metadata: dict[str, Any] | None = None,
+    subprotocols: list[dict[str, Any]] | None = None,
+) -> Path:
+    """Create a current-format acquisition manifest for externally-ingested data.
+
+    Public entry point for an out-of-suite ingest tool that transforms older
+    data (e.g. legacy MATLAB sessions) into the MSW namespace: pair the
+    transformed ``.msw.df.jsonl`` with the manifest this writes, and the
+    standard readers will load it via the manifest-led path. Pass ``metadata``
+    with at least ``{"source": "legacy_matlab", ...}`` plus any legacy subject
+    ids; the readers surface it as ``MswSession.metadata``.
+
+    Overwrites any existing acquisition_manifest.yaml in the folder.
+
+    Returns:
+        The path to the written manifest.
+    """
+    p = Path(acquisition_folder) / "acquisition_manifest.yaml"
+    data: dict[str, Any] = {
+        "msw_manifest_version": 1,
+        "msw_namespace_version": _namespace_version(),
+        "type": "acquisition",
+        "acquisition_name": acquisition_name,
+        "subprotocols": list(subprotocols) if subprotocols else [],
+    }
+    if metadata:
+        data["metadata"] = dict(metadata)
+    _write_yaml(p, data)
+    return p
 
 
 def append_subprotocol(

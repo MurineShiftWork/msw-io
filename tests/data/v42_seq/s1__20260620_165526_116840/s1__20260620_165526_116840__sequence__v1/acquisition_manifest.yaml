@@ -1,0 +1,5 @@
+msw_manifest_version: 1
+msw_namespace_version: '4.2'
+type: acquisition
+acquisition_name: s1__20260620_165526_116840__sequence__v1
+subprotocols: []

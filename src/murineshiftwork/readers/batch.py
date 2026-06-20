@@ -104,6 +104,7 @@ def load_session(
         settings_stage=raw.get("settings.stage"),
         settings_ephys=raw.get("settings.ephys"),
         subprotocols=raw.get("subprotocols"),
+        metadata=raw.get("metadata"),
         is_complete=raw.get("is_complete_session", False),
         is_ephys=raw.get("is_ephys_session", False),
         acquisition_name=acquisition_name,
