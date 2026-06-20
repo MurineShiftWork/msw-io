@@ -9,6 +9,9 @@ from murineshiftwork.namespace.msw_files import is_msw_file
 ARTIFACT_FORMAT_LEGACY = "legacy"
 ARTIFACT_FORMAT_SEPARATE_JSON = "separate_json"
 ARTIFACT_FORMAT_SESSION_YAML = "session_yaml"
+ARTIFACT_FORMAT_MANIFEST = "manifest"
+
+_MANIFEST_NAMES = ("session_manifest.yaml", "acquisition_manifest.yaml")
 
 
 # ---------------------------------------------------------------------------
@@ -73,24 +76,44 @@ def _infer_session_basename(session_dir: Path) -> str | None:
 
 
 def detect_artifact_format(session_dir: Path) -> str:
-    """Detect artifact storage format from files present in session_dir."""
+    """Detect artifact storage format, trying the latest format first.
+
+    Tiered, latest-first:
+
+    1. ``manifest`` - a session/acquisition manifest is present. This is the
+       current namespace format and also how an out-of-suite ingest tool marks
+       transformed legacy data (a manifest plus ``.msw.df.jsonl``). The
+       manifest-led reader loads the jsonl and any session.yaml/metadata.
+    2. ``session_yaml`` - no manifest, but the complete MSW jsonl/yaml dataset
+       is present (``.msw.session.yaml`` or ``.msw.df.jsonl``): degraded
+       namespace read.
+    3. ``separate_json`` - separate ``.msw.settings.*.json`` + trial data.
+    4. ``legacy`` - further-back formats (``task_settings.py`` + ``switching.pkl``).
+    """
     session_dir = Path(session_dir)
     names = {p.name for p in session_dir.iterdir()}
 
-    if any(
-        n.endswith("task_settings.py")
-        or n.endswith("switching.pkl")
-        or n.endswith("switching.csv")
-        for n in names
-    ):
-        return ARTIFACT_FORMAT_LEGACY
-
+    # Native current session: the .msw.session.yaml is the authoritative marker
+    # (its label is unchanged; the manifest-led reader still reads any manifest).
     if any(".msw.session.yaml" in n for n in names):
         return ARTIFACT_FORMAT_SESSION_YAML
 
+    # Manifest-led: a manifest with no native session.yaml. This is how an
+    # out-of-suite tool marks transformed legacy data (manifest + .msw.df.jsonl).
+    # Checked before separate-json/legacy so such a dataset is never misrouted
+    # to the legacy reader.
+    if any(m in names for m in _MANIFEST_NAMES):
+        return ARTIFACT_FORMAT_MANIFEST
+
+    # Separate json settings + trial data.
     if any(".msw.settings.process.json" in n for n in names):
         return ARTIFACT_FORMAT_SEPARATE_JSON
 
+    # Degraded namespace read: a bare .msw.df.jsonl with no settings/manifest.
+    if any(".msw.df.jsonl" in n for n in names):
+        return ARTIFACT_FORMAT_SESSION_YAML
+
+    # Further-back legacy (task_settings.py + switching.pkl, etc.).
     return ARTIFACT_FORMAT_LEGACY
 
 

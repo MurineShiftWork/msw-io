@@ -15,6 +15,7 @@ import yaml
 from murineshiftwork.readers.files import read_json, read_settings_py, read_trial_df
 from murineshiftwork.readers.namespace import (
     ARTIFACT_FORMAT_LEGACY,
+    ARTIFACT_FORMAT_MANIFEST,
     ARTIFACT_FORMAT_SEPARATE_JSON,
     ARTIFACT_FORMAT_SESSION_YAML,
     detect_session_format,
@@ -78,6 +79,11 @@ def _attach_msw_version(data: dict, is_legacy: bool) -> None:
 
 
 def _check_completeness(data: dict, is_legacy: bool) -> bool:
+    # Transformed legacy-MATLAB datasets are jsonl + manifest only: completeness
+    # is "trial data present", not the full native settings set.
+    source = (data.get("metadata") or {}).get("source", "")
+    if isinstance(source, str) and source.startswith("legacy_matlab"):
+        return data.get("df") is not None
     required = ["df", "settings.task"]
     if not is_legacy:
         required.append("settings.process")
@@ -85,6 +91,28 @@ def _check_completeness(data: dict, is_legacy: bool) -> bool:
         if k not in data:
             return False
     return data.get("df") is not None
+
+
+def _read_metadata(session_dir: Path) -> dict | None:
+    """Collect the optional ``metadata`` block from manifests and session.yaml.
+
+    Open, free-form provenance: namespace-derived vars plus, for ingested
+    legacy data, a ``source`` flag and original (legacy) subject ids. Absent
+    on native sessions, in which case this returns None.
+    """
+    meta: dict = {}
+    for mname in ("session_manifest.yaml", "acquisition_manifest.yaml"):
+        p = session_dir / mname
+        if p.exists():
+            m = yaml.safe_load(p.read_text()) or {}
+            if isinstance(m.get("metadata"), dict):
+                meta.update(m["metadata"])
+    for f in session_dir.glob("*.msw.session.yaml"):
+        payload = yaml.load(f.read_text(), Loader=_PermissiveLoader) or {}
+        if isinstance(payload.get("metadata"), dict):
+            meta.update(payload["metadata"])
+        break
+    return meta or None
 
 
 def _read_session_yaml(session_dir: Path, fmt: dict) -> dict:
@@ -186,7 +214,12 @@ def _read_legacy(session_dir: Path, fmt: dict) -> dict:
     return data
 
 
+# The manifest-led reader is the session.yaml reader: it already loads any
+# .msw.session.yaml, the .msw.df.jsonl, and the manifest subprotocols. For a
+# transformed legacy-MATLAB dir (manifest + jsonl, no session.yaml) it simply
+# finds and loads the jsonl, which is exactly what is needed.
 _READER_DISPATCH = {
+    ARTIFACT_FORMAT_MANIFEST: _read_session_yaml,
     ARTIFACT_FORMAT_SESSION_YAML: _read_session_yaml,
     ARTIFACT_FORMAT_SEPARATE_JSON: _read_separate_json,
     ARTIFACT_FORMAT_LEGACY: _read_legacy,
@@ -224,10 +257,16 @@ def read_session_data(session_dir=None):
 
     data = reader(session_dir, fmt)
 
+    data["metadata"] = _read_metadata(session_dir)
     data["namespace_version"] = fmt["namespace_version"]
     data["artifact_format"] = artifact_format
-    data["is_legacy_session"] = is_legacy
-    _attach_msw_version(data, is_legacy)
+    # A transformed legacy-MATLAB dataset is legacy-sourced even though it has
+    # no native legacy files; reflect that for downstream consumers.
+    source = (data.get("metadata") or {}).get("source", "")
+    data["is_legacy_session"] = is_legacy or (
+        isinstance(source, str) and source.startswith("legacy")
+    )
+    _attach_msw_version(data, data["is_legacy_session"])
     data["is_complete_session"] = _check_completeness(data, is_legacy)
     data["is_ephys_session"] = "settings.ephys" in data
 
