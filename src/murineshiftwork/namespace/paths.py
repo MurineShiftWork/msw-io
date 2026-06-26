@@ -214,27 +214,31 @@ def parse_acquisition_basename(basename: str) -> dict:
             f"Acquisition basename has no type component after datetime: {basename!r}"
         )
 
-    acq_type = tail[0]
     acq_version: int | None = None
     task: str | None = None
     is_legacy = False
 
-    if len(tail) == 1:
-        # 3-component: subject__dt__acq_type_or_task
-        if acq_type not in _KNOWN_ACQ_TYPES:
-            task = acq_type
-            acq_type = "msw"
-            is_legacy = True
-    elif len(tail) >= 2:
-        version_match = _VERSION_RE.match(tail[1])
+    # v4.3 grammar: subject__datetime__acq_type[__task][__vN]. The acq_type is a
+    # known enum token; an optional task token follows (visible in the path), and
+    # a trailing __vN is the (legacy) acquisition version. When the first token is
+    # NOT a known acq_type it is a legacy basename whose third component is the
+    # task name and whose acq system is implicitly "msw".
+    if tail[0] in _KNOWN_ACQ_TYPES:
+        acq_type = tail[0]
+        rest = tail[1:]
+    else:
+        acq_type = "msw"
+        is_legacy = True
+        rest = tail
+
+    for tok in rest:
+        version_match = _VERSION_RE.match(tok)
         if version_match:
             acq_version = int(version_match.group(1))
-        else:
-            # Two components after datetime but second is not a version - treat
-            # entire tail as legacy task name.
-            task = "__".join(tail)
-            acq_type = "msw"
-            is_legacy = True
+        elif task is None:
+            task = tok
+        else:  # defensive: extra non-version tokens fold into the task
+            task = f"{task}__{tok}"
 
     return {
         "subject": subject,
@@ -353,7 +357,15 @@ def generate_session_paths(
         session_container = builder.build_path("session", _sess_values)
 
     # --- Acquisition basename (acquisition level) ---
+    # v4.3: the task token is part of the path ONLY for the behaviour acq system
+    # (acq_type == "msw"). Typed acquisitions -- video_rce, video_flir, pxi,
+    # photo -- never carry it, so downstream camera/ephys consumers are not handed
+    # the behaviour task tag (e.g. a video_flir sibling stays "...__video_flir",
+    # not "...__video_flir__sequence").
     _acq_values = {"subject": subject, "datetime": dt, "acq_type": acq_type}
+    if acq_type == "msw" and task and not str(task).startswith("_test"):
+        _validate_path_component(str(task), "Task name")
+        _acq_values["task"] = str(task)
     if acq_version is not None:
         _acq_values["version"] = str(acq_version)
     session_basename = builder.build_path("acquisition", _acq_values)

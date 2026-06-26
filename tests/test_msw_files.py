@@ -18,7 +18,7 @@ def test_msw_yaml_loads():
     from acquisition_namespace import NamespaceBuilder
 
     b = NamespaceBuilder.from_yaml(_NAMESPACE_DIR / "namespace.msw.yaml")
-    assert b.spec.version == "4.2"
+    assert b.spec.version == "4.3"
     assert b.hierarchy == ["subject", "session", "acquisition", "file"]
     assert "acquisition" not in b.optional_levels
 
@@ -184,7 +184,8 @@ def test_generate_session_paths_v4_structure(tmp_path):
     assert paths["acq_type"] == "msw"
     assert paths["acq_version"] == 1  # version written by default
     assert "mouse_01" in paths["session_folder"]
-    assert paths["session_basename"].endswith("__msw__v1")
+    # v4.3: behaviour (msw) acquisitions carry the task token in the path
+    assert paths["session_basename"].endswith("__msw__probabilistic_switching__v1")
     assert "__" not in paths["subject"]
 
 
