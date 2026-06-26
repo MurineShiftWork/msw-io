@@ -221,7 +221,10 @@ def test_v42_load_session_parses_versioned_acquisition():
 
     s = load_session(_skip_if_absent(FIXTURES_DIR / _V42_ACQ))
     assert s.subject == "_test_subject"
-    assert s.acq_type == "sequence"
+    # v4.3: `…__sequence__v1` is a legacy basename -> acq_type "msw", task visible
+    # (previously mis-parsed to acq_type "sequence").
+    assert s.acq_type == "msw"
+    assert s.task == "sequence"
     assert s.namespace_version is not None
     assert s.df is not None and len(s.df) == 2
 
@@ -232,7 +235,8 @@ def test_v42_load_acquisition_reads_session_manifest():
 
     sessions = load_acquisition(_skip_if_absent(FIXTURES_DIR / _V42_CONTAINER))
     assert len(sessions) == 1
-    assert sessions[0].acq_type == "sequence"
+    assert sessions[0].acq_type == "msw"
+    assert sessions[0].task == "sequence"
 
 
 def test_v42_identified_from_stamped_metadata():
