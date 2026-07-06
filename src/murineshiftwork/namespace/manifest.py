@@ -245,9 +245,11 @@ def finalize_subprotocol(
 
 
 # ---------------------------------------------------------------------------
-# Subject manifest: lives in the subject dir (basepath/{subject}); holds records
-# that persist across sessions, first use case being chronic probe insertions.
-# Written outside a task run (e.g. at surgery time) via the writers below.
+# Subject manifest: a general key-value YAML in the subject dir (basepath/{subject})
+# for records that persist across sessions. This module stays domain-agnostic: it
+# provides init + a generic key extender + metadata merge + read. Specific schemas
+# (e.g. probe insertions) belong in their own addon packages, which add their keys
+# via update_subject_manifest() rather than baking assumptions in here.
 
 
 SUBJECT_MANIFEST_NAME = "subject_manifest.yaml"
@@ -314,7 +316,6 @@ def _new_subject_manifest(subject: str) -> dict[str, Any]:
         "subject": subject,
         "created_at": _now_iso(),
         "updated_at": _now_iso(),
-        "probe_insertions": [],
     }
     fields = _subject_fields(subject)
     if fields:
@@ -337,51 +338,21 @@ def init_subject_manifest(subject_dir: str | Path, subject: str) -> Path:
     return p
 
 
-def append_probe_insertion(subject_dir: str | Path, insertion: dict[str, Any]) -> None:
-    """Add (or upsert by ``id``) a chronic probe-insertion record.
-
-    ``insertion`` must carry an ``id`` (probe serial or a stable label). New records
-    default to ``status="active"`` with ``inserted_at`` now and ``explanted_at`` None;
-    any provided fields (target, hemisphere, coordinates, probe hardware block, ...)
-    are merged in. Creates the manifest if absent.
-    """
-    if "id" not in insertion:
-        raise ValueError("probe insertion requires an 'id' (probe serial or stable label)")
-    p, data = _load_or_init_subject(subject_dir)
-    insertions = data.setdefault("probe_insertions", [])
-    for existing in insertions:
-        if existing.get("id") == insertion["id"]:
-            existing.update(insertion)
-            break
-    else:
-        record: dict[str, Any] = {
-            "status": "active",
-            "inserted_at": _now_iso(),
-            "explanted_at": None,
-        }
-        record.update(insertion)
-        insertions.append(record)
-    data["updated_at"] = _now_iso()
-    _write_yaml(p, data)
-
-
-def finalize_probe_insertion(
+def update_subject_manifest(
     subject_dir: str | Path,
-    insertion_id: Any,
+    updates: dict[str, Any],
     *,
-    status: str = "explanted",
-    explanted_at: str | None = None,
+    subject: str | None = None,
 ) -> None:
-    """Mark a probe insertion explanted/failed. No-op if the manifest or id is absent."""
-    p = Path(subject_dir) / SUBJECT_MANIFEST_NAME
-    if not p.exists():
-        return
-    data = _read_yaml(p)
-    for record in data.get("probe_insertions", []):
-        if record.get("id") == insertion_id:
-            record["status"] = status
-            record["explanted_at"] = explanted_at or _now_iso()
-            break
+    """Merge arbitrary top-level keys into the subject manifest (creating it if absent).
+
+    The general extension point. This module makes no assumptions about the shape of
+    subject-level data: callers (e.g. a probe-insertion addon) own their own keys and
+    pass them here. A value replaces any existing key of the same name, so do
+    read -> modify -> update to accumulate into a list or nested dict.
+    """
+    p, data = _load_or_init_subject(subject_dir, subject)
+    data.update(updates)
     data["updated_at"] = _now_iso()
     _write_yaml(p, data)
 
