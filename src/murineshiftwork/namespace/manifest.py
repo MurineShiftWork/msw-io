@@ -242,3 +242,167 @@ def finalize_subprotocol(
             sp["status"] = status
             break
     _write_yaml(p, data)
+
+
+# ---------------------------------------------------------------------------
+# Subject manifest: lives in the subject dir (basepath/{subject}); holds records
+# that persist across sessions, first use case being chronic probe insertions.
+# Written outside a task run (e.g. at surgery time) via the writers below.
+
+
+SUBJECT_MANIFEST_NAME = "subject_manifest.yaml"
+
+
+def subject_manifest_path(basepath: str | Path, subject: str) -> Path:
+    """Return the subject manifest path: ``{basepath}/{subject}/subject_manifest.yaml``."""
+    return Path(basepath) / subject / SUBJECT_MANIFEST_NAME
+
+
+def subject_dir_for(path: str | Path) -> Path | None:
+    """Resolve the subject directory (``basepath/{subject}``) from any session,
+    acquisition, or file path beneath it, or from the subject dir itself.
+
+    Returns None if a subject cannot be identified.
+    """
+    from murineshiftwork.namespace.paths import (
+        parse_acquisition_basename,
+        parse_subject,
+    )
+
+    p = Path(path)
+    # From a session/acquisition/file path: parse the subject off the nearest
+    # parseable basename, then return the ancestor dir named exactly that subject.
+    for anc in (p, *p.parents):
+        try:
+            subject = parse_acquisition_basename(anc.name)["subject"]
+        except Exception:
+            continue
+        for a2 in (anc, *anc.parents):
+            if a2.name == subject:
+                return a2
+    # Fallback: the path is itself the subject dir (its name is a valid subject,
+    # or it already holds a subject_manifest.yaml).
+    if (p / SUBJECT_MANIFEST_NAME).exists():
+        return p
+    try:
+        parse_subject(p.name)
+        return p
+    except Exception:
+        return None
+
+
+def _subject_fields(subject: str) -> dict | None:
+    """Structured subject fields (subject_id/animal_id/tag_id) or None if unstructured."""
+    from murineshiftwork.namespace.paths import parse_subject
+
+    try:
+        parsed = parse_subject(subject)
+    except Exception:
+        return None
+    return {
+        "subject_id": parsed["subject_id"],
+        "animal_id": parsed["animal_id"],
+        "tag_id": parsed["tag_id"],
+    }
+
+
+def _new_subject_manifest(subject: str) -> dict[str, Any]:
+    data: dict[str, Any] = {
+        "msw_manifest_version": 1,
+        "msw_namespace_version": _namespace_version(),
+        "type": "subject",
+        "subject": subject,
+        "created_at": _now_iso(),
+        "updated_at": _now_iso(),
+        "probe_insertions": [],
+    }
+    fields = _subject_fields(subject)
+    if fields:
+        data["subject_fields"] = fields
+    return data
+
+
+def _load_or_init_subject(subject_dir: str | Path, subject: str | None = None) -> tuple[Path, dict]:
+    p = Path(subject_dir) / SUBJECT_MANIFEST_NAME
+    if p.exists():
+        return p, _read_yaml(p)
+    return p, _new_subject_manifest(subject or Path(subject_dir).name)
+
+
+def init_subject_manifest(subject_dir: str | Path, subject: str) -> Path:
+    """Create subject_manifest.yaml in the subject dir if absent. Returns its path."""
+    p = Path(subject_dir) / SUBJECT_MANIFEST_NAME
+    if not p.exists():
+        _write_yaml(p, _new_subject_manifest(subject))
+    return p
+
+
+def append_probe_insertion(subject_dir: str | Path, insertion: dict[str, Any]) -> None:
+    """Add (or upsert by ``id``) a chronic probe-insertion record.
+
+    ``insertion`` must carry an ``id`` (probe serial or a stable label). New records
+    default to ``status="active"`` with ``inserted_at`` now and ``explanted_at`` None;
+    any provided fields (target, hemisphere, coordinates, probe hardware block, ...)
+    are merged in. Creates the manifest if absent.
+    """
+    if "id" not in insertion:
+        raise ValueError("probe insertion requires an 'id' (probe serial or stable label)")
+    p, data = _load_or_init_subject(subject_dir)
+    insertions = data.setdefault("probe_insertions", [])
+    for existing in insertions:
+        if existing.get("id") == insertion["id"]:
+            existing.update(insertion)
+            break
+    else:
+        record: dict[str, Any] = {
+            "status": "active",
+            "inserted_at": _now_iso(),
+            "explanted_at": None,
+        }
+        record.update(insertion)
+        insertions.append(record)
+    data["updated_at"] = _now_iso()
+    _write_yaml(p, data)
+
+
+def finalize_probe_insertion(
+    subject_dir: str | Path,
+    insertion_id: Any,
+    *,
+    status: str = "explanted",
+    explanted_at: str | None = None,
+) -> None:
+    """Mark a probe insertion explanted/failed. No-op if the manifest or id is absent."""
+    p = Path(subject_dir) / SUBJECT_MANIFEST_NAME
+    if not p.exists():
+        return
+    data = _read_yaml(p)
+    for record in data.get("probe_insertions", []):
+        if record.get("id") == insertion_id:
+            record["status"] = status
+            record["explanted_at"] = explanted_at or _now_iso()
+            break
+    data["updated_at"] = _now_iso()
+    _write_yaml(p, data)
+
+
+def set_subject_metadata(subject_dir: str | Path, metadata: dict[str, Any]) -> None:
+    """Merge a metadata block into the subject manifest (creating it if absent)."""
+    p, data = _load_or_init_subject(subject_dir)
+    raw = data.get("metadata")
+    existing = raw if isinstance(raw, dict) else {}
+    data["metadata"] = {**existing, **metadata}
+    data["updated_at"] = _now_iso()
+    _write_yaml(p, data)
+
+
+def read_subject_manifest(subject_dir_or_path: str | Path) -> dict | None:
+    """Read the subject manifest resolved from any path beneath the subject dir.
+
+    Returns the parsed manifest, or None if there is none.
+    """
+    sd = subject_dir_for(subject_dir_or_path)
+    if sd is None:
+        return None
+    p = sd / SUBJECT_MANIFEST_NAME
+    return _read_yaml(p) if p.exists() else None
