@@ -101,8 +101,14 @@ def _read_metadata(session_dir: Path) -> dict | None:
     on native sessions, in which case this returns None.
     """
     meta: dict = {}
-    for mname in ("session_manifest.yaml", "acquisition_manifest.yaml"):
-        p = session_dir / mname
+    # Session-level metadata (e.g. reward) lives in the PARENT container's
+    # session_manifest; acquisition-level in this dir's manifests. Read session-level
+    # first so any acquisition-level key overrides it.
+    for p in (
+        session_dir.parent / "session_manifest.yaml",  # session-level (container)
+        session_dir / "session_manifest.yaml",          # flat/legacy fallback
+        session_dir / "acquisition_manifest.yaml",       # acquisition-level
+    ):
         if p.exists():
             m = yaml.safe_load(p.read_text()) or {}
             if isinstance(m.get("metadata"), dict):
