@@ -42,6 +42,19 @@ def _write_yaml(path: Path, data: dict) -> None:
     tmp.replace(path)
 
 
+def _deep_merge(base: dict, updates: dict) -> dict:
+    """Recursively merge ``updates`` into ``base``: nested dicts are merged, other
+    values (including lists) are replaced. Lets callers insert into a metadata
+    key-tree without clobbering sibling subtrees.
+    """
+    for k, v in updates.items():
+        if isinstance(v, dict) and isinstance(base.get(k), dict):
+            _deep_merge(base[k], v)
+        else:
+            base[k] = v
+    return base
+
+
 # ---------------------------------------------------------------------------
 # Session manifest: lives in the session container; lists acquisitions.
 
@@ -152,9 +165,8 @@ def set_manifest_metadata(manifest_path: str | Path, metadata: dict[str, Any]) -
     """
     p = Path(manifest_path)
     data = _read_yaml(p) if p.exists() else {}
-    raw = data.get("metadata")
-    existing = raw if isinstance(raw, dict) else {}
-    data["metadata"] = {**existing, **metadata}
+    existing = data.get("metadata")
+    data["metadata"] = _deep_merge(existing if isinstance(existing, dict) else {}, metadata)
     _write_yaml(p, data)
 
 
@@ -358,11 +370,16 @@ def update_subject_manifest(
 
 
 def set_subject_metadata(subject_dir: str | Path, metadata: dict[str, Any]) -> None:
-    """Merge a metadata block into the subject manifest (creating it if absent)."""
+    """Deep-merge a subtree into the subject manifest's open ``metadata`` key-tree.
+
+    The general extension point for addons (probes, opto, ...): insert nested keys
+    under ``metadata`` (e.g. ``{"probes": {"insertions": [...]}}``) without clobbering
+    sibling subtrees. Dicts merge recursively; lists/scalars replace. Creates the
+    manifest if absent.
+    """
     p, data = _load_or_init_subject(subject_dir)
-    raw = data.get("metadata")
-    existing = raw if isinstance(raw, dict) else {}
-    data["metadata"] = {**existing, **metadata}
+    existing = data.get("metadata")
+    data["metadata"] = _deep_merge(existing if isinstance(existing, dict) else {}, metadata)
     data["updated_at"] = _now_iso()
     _write_yaml(p, data)
 

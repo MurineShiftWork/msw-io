@@ -61,6 +61,17 @@ def test_set_subject_metadata_merges(tmp_path):
     assert m.read_subject_manifest(subject_dir)["metadata"] == {"colony_id": "abc", "line": "PV-Cre"}
 
 
+def test_set_subject_metadata_deep_merges_key_trees(tmp_path):
+    """Addons insert nested subtrees under metadata without clobbering siblings."""
+    subject_dir, _ = _make_tree(tmp_path)
+    m.set_subject_metadata(subject_dir, {"probes": {"insertions": [{"id": "a"}]}})
+    m.set_subject_metadata(subject_dir, {"probes": {"note": "hi"}})   # sibling subtree
+    m.set_subject_metadata(subject_dir, {"opto": {"channels": [1]}})  # different top key
+    md = m.read_subject_manifest(subject_dir)["metadata"]
+    assert md["probes"] == {"insertions": [{"id": "a"}], "note": "hi"}
+    assert md["opto"] == {"channels": [1]}
+
+
 def test_unstructured_subject_has_no_fields(tmp_path):
     subject_dir = tmp_path / "weird-subject-name"
     subject_dir.mkdir()
