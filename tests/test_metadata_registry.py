@@ -15,7 +15,8 @@ class _ProbesAddon:
 
     def validate(self, block: object) -> list[str]:
         warnings: list[str] = []
-        for i, p in enumerate((block or {}).get("probes", [])):
+        data = block if isinstance(block, dict) else {}
+        for i, p in enumerate(data.get("probes", [])):
             if "id" not in p:
                 warnings.append(f"probe[{i}] missing id")
         return warnings
@@ -32,9 +33,11 @@ class _RaisingAddon:
 @pytest.fixture
 def registered(monkeypatch):
     """Inject addons directly into the discovery cache (no entry points needed)."""
+
     def _install(*addons):
         reg.reset_cache()
         monkeypatch.setattr(reg, "_discover", lambda: {a.subtree: a for a in addons})
+
     yield _install
     reg.reset_cache()
 

@@ -17,8 +17,11 @@ def _make_tree(root):
 
 def test_path_helpers_and_resolution(tmp_path):
     subject_dir, acq = _make_tree(tmp_path)
-    assert m.subject_manifest_path(tmp_path, SUBJECT) == subject_dir / "subject_manifest.yaml"
-    assert m.subject_dir_for(acq) == subject_dir          # from a deep acquisition path
+    assert (
+        m.subject_manifest_path(tmp_path, SUBJECT)
+        == subject_dir / "subject_manifest.yaml"
+    )
+    assert m.subject_dir_for(acq) == subject_dir  # from a deep acquisition path
     assert m.subject_dir_for(subject_dir) == subject_dir  # from the subject dir itself
 
 
@@ -29,7 +32,11 @@ def test_init_stamps_type_version_and_fields(tmp_path):
     assert data["type"] == "subject"
     assert data["subject"] == SUBJECT
     assert data["msw_namespace_version"] == m._namespace_version()
-    assert data["subject_fields"] == {"subject_id": "t004", "animal_id": "m2045", "tag_id": None}
+    assert data["subject_fields"] == {
+        "subject_id": "t004",
+        "animal_id": "m2045",
+        "tag_id": None,
+    }
     # domain-agnostic: no baked-in categories like probe_insertions
     assert "probe_insertions" not in data
 
@@ -58,15 +65,20 @@ def test_set_subject_metadata_merges(tmp_path):
     subject_dir, _ = _make_tree(tmp_path)
     m.set_subject_metadata(subject_dir, {"colony_id": "abc"})
     m.set_subject_metadata(subject_dir, {"line": "PV-Cre"})
-    assert m.read_subject_manifest(subject_dir)["metadata"] == {"colony_id": "abc", "line": "PV-Cre"}
+    assert m.read_subject_manifest(subject_dir)["metadata"] == {
+        "colony_id": "abc",
+        "line": "PV-Cre",
+    }
 
 
 def test_set_subject_metadata_deep_merges_key_trees(tmp_path):
     """Addons insert nested subtrees under metadata without clobbering siblings."""
     subject_dir, _ = _make_tree(tmp_path)
     m.set_subject_metadata(subject_dir, {"probes": {"insertions": [{"id": "a"}]}})
-    m.set_subject_metadata(subject_dir, {"probes": {"note": "hi"}})   # sibling subtree
-    m.set_subject_metadata(subject_dir, {"opto": {"channels": [1]}})  # different top key
+    m.set_subject_metadata(subject_dir, {"probes": {"note": "hi"}})  # sibling subtree
+    m.set_subject_metadata(
+        subject_dir, {"opto": {"channels": [1]}}
+    )  # different top key
     md = m.read_subject_manifest(subject_dir)["metadata"]
     assert md["probes"] == {"insertions": [{"id": "a"}], "note": "hi"}
     assert md["opto"] == {"channels": [1]}

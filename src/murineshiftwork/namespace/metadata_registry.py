@@ -51,7 +51,7 @@ def _discover() -> dict[str, Any]:
         return _ADDONS
     addons: dict[str, Any] = {}
     try:
-        eps = entry_points(group=ENTRY_POINT_GROUP)
+        eps = list(entry_points(group=ENTRY_POINT_GROUP))
     except Exception:
         eps = []
     for ep in eps:
