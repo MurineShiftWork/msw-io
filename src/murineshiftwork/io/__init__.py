@@ -132,3 +132,12 @@ def load_trial_data(filepath) -> list:
                 continue
             trials.append(_decode_tuples(obj))
     return trials
+
+
+# The swappable trial-data writer lives beside the codec it wraps. Re-exported here so callers use
+# `from murineshiftwork.io import TrialDataWriter, JsonlTrialDataWriter`. Imported last to avoid a
+# cycle (JsonlTrialDataWriter uses save_trial_data above, via a lazy import).
+from murineshiftwork.io.trial_writer import (  # noqa: E402, F401
+    JsonlTrialDataWriter,
+    TrialDataWriter,
+)
