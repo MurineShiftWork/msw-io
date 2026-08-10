@@ -166,7 +166,9 @@ def set_manifest_metadata(manifest_path: str | Path, metadata: dict[str, Any]) -
     p = Path(manifest_path)
     data = _read_yaml(p) if p.exists() else {}
     existing = data.get("metadata")
-    data["metadata"] = _deep_merge(existing if isinstance(existing, dict) else {}, metadata)
+    data["metadata"] = _deep_merge(
+        existing if isinstance(existing, dict) else {}, metadata
+    )
     _write_yaml(p, data)
 
 
@@ -335,7 +337,9 @@ def _new_subject_manifest(subject: str) -> dict[str, Any]:
     return data
 
 
-def _load_or_init_subject(subject_dir: str | Path, subject: str | None = None) -> tuple[Path, dict]:
+def _load_or_init_subject(
+    subject_dir: str | Path, subject: str | None = None
+) -> tuple[Path, dict]:
     p = Path(subject_dir) / SUBJECT_MANIFEST_NAME
     if p.exists():
         return p, _read_yaml(p)
@@ -379,7 +383,9 @@ def set_subject_metadata(subject_dir: str | Path, metadata: dict[str, Any]) -> N
     """
     p, data = _load_or_init_subject(subject_dir)
     existing = data.get("metadata")
-    data["metadata"] = _deep_merge(existing if isinstance(existing, dict) else {}, metadata)
+    data["metadata"] = _deep_merge(
+        existing if isinstance(existing, dict) else {}, metadata
+    )
     data["updated_at"] = _now_iso()
     _write_yaml(p, data)
 
