@@ -12,8 +12,13 @@ and decoded back to tuples on load. This keeps the computational interface
 identical between JSONL and legacy pkl sessions (e.g. block_type_values).
 """
 
+import contextlib
 import json
 import logging
+import os
+import shutil
+import time
+import uuid
 from pathlib import Path
 
 import numpy as np
@@ -84,12 +89,53 @@ class _NumpyEncoder(json.JSONEncoder):
         return super().default(obj)
 
 
+# On Windows a reader holding the target open makes os.replace fail with PermissionError; retry
+# briefly before falling back to an in-place copy (never drop the write).
+_REPLACE_ATTEMPTS = 5
+_REPLACE_RETRY_DELAY_S = 0.05
+
+
+def _atomic_write_text(filepath: Path, text: str) -> None:
+    """Replace ``filepath`` with ``text`` atomically (temp sibling, fsync, ``os.replace``).
+
+    A crash mid-write leaves the previous file intact. The temp file is created with
+    ``open(..., "x")`` so it gets the normal umask permissions, and an existing target's mode is
+    copied across. If the swap keeps failing with ``PermissionError`` (Windows, target held open
+    by a reader) the content is copied over the target in place instead, with a warning.
+    """
+    tmp = filepath.with_name(f".{filepath.name}.{uuid.uuid4().hex[:8]}.tmp")
+    try:
+        with tmp.open("x") as f:
+            f.write(text)
+            f.flush()
+            os.fsync(f.fileno())
+        if filepath.exists():
+            with contextlib.suppress(OSError):
+                shutil.copymode(filepath, tmp)
+        for attempt in range(_REPLACE_ATTEMPTS):
+            try:
+                tmp.replace(filepath)  # os.replace: atomic swap
+                return
+            except PermissionError:
+                if attempt + 1 < _REPLACE_ATTEMPTS:
+                    time.sleep(_REPLACE_RETRY_DELAY_S)
+        logging.warning(
+            f"Could not atomically replace {filepath} (held open?); rewriting in place"
+        )
+        shutil.copyfile(tmp, filepath)
+    finally:
+        with contextlib.suppress(OSError):
+            tmp.unlink(missing_ok=True)
+
+
 def save_trial_data(trial_data_list: list, filepath: str | Path) -> None:
     """Save a list of trial dicts to a JSONL file.
 
-    Overwrites any existing file.  The first line is a version header;
-    subsequent lines are one JSON object per trial.  Numpy arrays are
-    converted to lists; tuples are encoded as ``{"__tuple__": [...]}``
+    Replaces any existing file atomically: every trial is encoded first, then the file is
+    written to a temporary sibling and swapped in with ``os.replace``, so a crash or an
+    unencodable trial never leaves a truncated file behind (the previous contents survive).
+    The first line is a version header; subsequent lines are one JSON object per trial.
+    Numpy arrays are converted to lists; tuples are encoded as ``{"__tuple__": [...]}``
     so they survive the round-trip through ``load_trial_data``.
 
     Args:
@@ -98,13 +144,12 @@ def save_trial_data(trial_data_list: list, filepath: str | Path) -> None:
     """
     filepath = Path(filepath)
     filepath.parent.mkdir(parents=True, exist_ok=True)
-    with filepath.open("w") as f:
-        f.write(json.dumps({"_msw_version": MSW_FILE_VERSION}) + "\n")
-        for trial in trial_data_list:
-            f.write(
-                json.dumps(_round_floats(_encode_tuples(trial)), cls=_NumpyEncoder)
-                + "\n"
-            )
+    lines = [json.dumps({"_msw_version": MSW_FILE_VERSION})]
+    lines.extend(
+        json.dumps(_round_floats(_encode_tuples(trial)), cls=_NumpyEncoder)
+        for trial in trial_data_list
+    )
+    _atomic_write_text(filepath, "".join(line + "\n" for line in lines))
     logging.debug(f"Saved {len(trial_data_list)} trials to {filepath}")
 
 

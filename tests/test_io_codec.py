@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from murineshiftwork.io import MSW_FILE_VERSION, load_trial_data, save_trial_data
 
@@ -76,3 +77,62 @@ def test_empty_trial_list_roundtrips(tmp_path):
     p = tmp_path / "out.jsonl"
     save_trial_data([], p)
     assert load_trial_data(p) == []
+
+
+def _tmp_leftovers(directory) -> list[str]:
+    return [p.name for p in directory.iterdir() if p.name.endswith(".tmp")]
+
+
+def test_save_is_byte_identical_to_line_per_trial_format(tmp_path):
+    p = tmp_path / "out.jsonl"
+    save_trial_data([{"a": 1}, {"b": (1, 2)}], p)
+    assert p.read_text().splitlines() == [
+        '{"_msw_version": "' + MSW_FILE_VERSION + '"}',
+        '{"a": 1}',
+        '{"b": {"__tuple__": [1, 2]}}',
+    ]
+    assert _tmp_leftovers(tmp_path) == []
+
+
+def test_unencodable_trial_leaves_previous_file_intact(tmp_path):
+    p = tmp_path / "out.jsonl"
+    save_trial_data([{"trial": 1}], p)
+    before = p.read_bytes()
+    with pytest.raises(TypeError):
+        save_trial_data([{"trial": 1}, {"bad": object()}], p)
+    assert p.read_bytes() == before  # not truncated to a partial file
+    assert _tmp_leftovers(tmp_path) == []
+
+
+def test_crash_mid_write_leaves_previous_file_intact(tmp_path, monkeypatch):
+    import murineshiftwork.io as io_mod
+
+    p = tmp_path / "out.jsonl"
+    save_trial_data([{"trial": 1}], p)
+    before = p.read_bytes()
+
+    def _boom(_fd):
+        raise OSError("disk full")
+
+    monkeypatch.setattr(io_mod.os, "fsync", _boom)
+    with pytest.raises(OSError, match="disk full"):
+        save_trial_data([{"trial": 1}, {"trial": 2}], p)
+    assert p.read_bytes() == before
+    assert _tmp_leftovers(tmp_path) == []
+
+
+def test_replace_blocked_falls_back_to_in_place_write(tmp_path, monkeypatch):
+    # Windows: a reader holding the file open makes os.replace raise PermissionError.
+    import murineshiftwork.io as io_mod
+
+    p = tmp_path / "out.jsonl"
+    save_trial_data([{"trial": 1}], p)
+
+    def _blocked(self, _target):
+        raise PermissionError("in use")
+
+    monkeypatch.setattr(io_mod.Path, "replace", _blocked)
+    monkeypatch.setattr(io_mod, "_REPLACE_RETRY_DELAY_S", 0)
+    save_trial_data([{"trial": 1}, {"trial": 2}], p)
+    assert load_trial_data(p) == [{"trial": 1}, {"trial": 2}]
+    assert _tmp_leftovers(tmp_path) == []
