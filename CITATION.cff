@@ -4,7 +4,8 @@ type: software
 title: "msw-io"
 repository-code: https://github.com/murineshiftwork/msw-io
 url: https://github.com/murineshiftwork/msw-io
-license: LicenseRef-MSW-NonCommercial
+# BSD-3-Clause-NonCommercial has no SPDX id, so CFF points at the licence file instead.
+license-url: https://github.com/MurineShiftWork/msw-io/blob/main/LICENSE
 authors:
   - family-names: Rollik
     given-names: Lars B.
