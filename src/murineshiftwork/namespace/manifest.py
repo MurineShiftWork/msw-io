@@ -76,12 +76,32 @@ def init_session_manifest(session_container: str | Path, session_name: str) -> N
     )
 
 
+_SESSION_ENTRY_KEYS = frozenset({"basename", "started_at", "ended_at", "status"})
+
+
 def append_acquisition_to_session(
     session_container: str | Path,
     acquisition_basename: str,
     started_at: str | None = None,
+    extra: dict[str, Any] | None = None,
 ) -> None:
-    """Add an acquisition entry (status=running). Call at TaskProcess init."""
+    """Add an acquisition entry (status=running). Call at TaskProcess init.
+
+    Args:
+        session_container: Session container holding session_manifest.yaml.
+        acquisition_basename: Basename of the acquisition to register.
+        started_at: ISO start time; defaults to now.
+        extra: Optional additional keys stored on the entry (e.g.
+            ``{"cameras": ["top"]}`` on a video acquisition). They cannot replace
+            the standard keys (basename, started_at, ended_at, status). Readers
+            ignore keys they do not know.
+
+    Raises:
+        ValueError: If ``extra`` names one of the standard entry keys.
+    """
+    clash = sorted(_SESSION_ENTRY_KEYS.intersection(extra or {}))
+    if clash:
+        raise ValueError(f"extra cannot set standard entry keys: {clash}")
     p = Path(session_container) / "session_manifest.yaml"
     data: dict[str, Any] = (
         _read_yaml(p)
@@ -101,6 +121,7 @@ def append_acquisition_to_session(
                 "started_at": started_at or _now_iso(),
                 "ended_at": None,
                 "status": "running",
+                **(extra or {}),
             }
         )
     _write_yaml(p, data)
