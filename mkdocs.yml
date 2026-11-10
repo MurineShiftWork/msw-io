@@ -41,4 +41,5 @@ nav:
   - Home: index.md
   - Getting started: getting_started.md
   - Concepts: concepts.md
+  - Namespace migration: migration.md
   - API reference: api.md
