@@ -49,6 +49,21 @@ paths = generate_session_paths("mouse_01", "gonogo", "/data", printout=False)
 print(paths["session_folder"])
 ```
 
+## Migrating older data
+
+`msw-io-migrate` (or `msw data migrate` with msw-core installed) renames data in
+older namespace shapes to the current one, in place. It is a dry run unless
+`--apply` is given:
+
+```bash
+msw-io-migrate /data --audit
+msw-io-migrate /data --level all --report migrate_dry_run.json
+msw-io-migrate /data --level all --apply --report migrate_applied.json
+msw-io-migrate /data --audit
+```
+
+See the [namespace migration](https://murineshiftwork.github.io/msw-io/migration/) page.
+
 ## Documentation
 
 Full documentation including API reference: <https://murineshiftwork.github.io/msw-io>

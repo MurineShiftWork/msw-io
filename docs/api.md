@@ -63,3 +63,15 @@
 ::: murineshiftwork.io.load_trial_data
     options:
       show_source: false
+
+---
+
+## Namespace migration
+
+::: murineshiftwork.namespace.migrate.run
+    options:
+      show_source: false
+
+::: murineshiftwork.namespace.migrate.audit
+    options:
+      show_source: false
