@@ -25,6 +25,12 @@ dependencies = [
     "pyyaml",
 ]
 
+[project.scripts]
+msw-io-migrate = "murineshiftwork.namespace.migrate_cli:main"
+
+[project.entry-points."msw.cli"]
+data = "murineshiftwork.namespace.migrate_cli:register"
+
 [project.optional-dependencies]
 dev = [
     "commitizen",
