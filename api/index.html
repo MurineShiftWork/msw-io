@@ -13,7 +13,7 @@
         <link rel="canonical" href="https://murineshiftwork.github.io/msw-io/api/">
       
       
-        <link rel="prev" href="../concepts/">
+        <link rel="prev" href="../migration/">
       
       
       
@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
     
     
       
@@ -29,10 +29,10 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -294,6 +294,33 @@
     
   
     Concepts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../migration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Namespace migration
   
 
     
@@ -985,6 +1012,39 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#namespace-migration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Namespace migration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#murineshiftwork.namespace.migrate.run" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        run
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#murineshiftwork.namespace.migrate.audit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        audit
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1626,6 +1686,39 @@
     <span class="md-ellipsis">
       
         load_trial_data
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#namespace-migration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Namespace migration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#murineshiftwork.namespace.migrate.run" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        run
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#murineshiftwork.namespace.migrate.audit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        audit
       
     </span>
   </a>
@@ -3671,6 +3764,130 @@ sentinels back to Python tuples.</p>
 
     </div>
 
+</div><hr />
+<h2 id="namespace-migration">Namespace migration<a class="headerlink" href="#namespace-migration" title="Permanent link">&para;</a></h2>
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="murineshiftwork.namespace.migrate.run" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">murineshiftwork</span><span class="o">.</span><span class="n">namespace</span><span class="o">.</span><span class="n">migrate</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">data_root</span><span class="p">,</span> <span class="n">opts</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#murineshiftwork.namespace.migrate.run" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents first">
+
+        <p>Migrate (or, by default, dry-run) a data root and return the report.</p>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="murineshiftwork.namespace.migrate.DataRootError">DataRootError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>opts.apply</code> is set and the root is not a directory or
+holds no subject dirs. A dry run on such a root only needs it to be
+a directory.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="murineshiftwork.namespace.migrate.audit" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">murineshiftwork</span><span class="o">.</span><span class="n">namespace</span><span class="o">.</span><span class="n">migrate</span><span class="o">.</span><span class="n">audit</span><span class="p">(</span><span class="n">data_root</span><span class="p">,</span> <span class="n">subjects</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#murineshiftwork.namespace.migrate.audit" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents first">
+
+        <p>Census the namespace tokens on disk (read-only) and flag anomalies.</p>
+<p>Scans everything, test (<code>_</code>-prefixed) subjects included. Prints the
+distinct acq_type / task / session_type / legacy <code>session_</code> / version
+tokens with counts, and warns on acq_types outside the closed enum and on
+test/calibration tasks missing the leading <code>_</code>. Domain tokens are reported
+but not flagged.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>(status, report)</code>: status is 1 when anything was flagged, else 0, so</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="dict">dict</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>it can gate an <code>apply</code>; report is the JSON-ready census.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="murineshiftwork.namespace.migrate.DataRootError">DataRootError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>data_root</code> is not a directory.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
 </div>
 
 
@@ -3727,10 +3944,10 @@ sentinels back to Python tuples.</p>
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.top", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.top", "content.code.copy"], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../assets/javascripts/bundle.a5f9d56c.min.js"></script>
       
     
   </body>
