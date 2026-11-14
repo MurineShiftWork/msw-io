@@ -90,3 +90,38 @@ def test_is_a_trial_data_writer():
     assert issubclass(JsonlTrialDataWriter, TrialDataWriter)
     with pytest.raises(TypeError):
         TrialDataWriter()  # ABC: cannot instantiate directly
+
+
+def test_nonfinite_floats_are_written_as_null(tmp_path):
+    """NaN/inf (scalar, numpy, nested) become strict-JSON null, not bare NaN."""
+    import json
+
+    path = tmp_path / "nan.df.jsonl"
+    save_trial_data(
+        [
+            {
+                "a": float("nan"),
+                "b": float("inf"),
+                "c": np.array([1.0, np.nan]),
+                "d": {"e": np.float64("-inf")},
+                "f": 1.5,
+            }
+        ],
+        path,
+    )
+    text = path.read_text()
+    assert "NaN" not in text and "Infinity" not in text
+    row = json.loads(text.splitlines()[1], parse_constant=lambda c: pytest.fail(c))
+    assert row == {"a": None, "b": None, "c": [1.0, None], "d": {"e": None}, "f": 1.5}
+
+
+def test_load_still_reads_legacy_bare_nan(tmp_path):
+    """Files written before the fix contain bare NaN and must still load."""
+    import math
+
+    from murineshiftwork.io import load_trial_data
+
+    path = tmp_path / "old.df.jsonl"
+    path.write_text('{"_msw_version": "1.0.0"}\n{"a": NaN, "b": 2}\n')
+    trials = load_trial_data(path)
+    assert math.isnan(trials[0]["a"]) and trials[0]["b"] == 2

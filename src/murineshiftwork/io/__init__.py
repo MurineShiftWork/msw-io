@@ -15,6 +15,7 @@ identical between JSONL and legacy pkl sessions (e.g. block_type_values).
 import contextlib
 import json
 import logging
+import math
 import os
 import shutil
 import time
@@ -71,6 +72,17 @@ def _round_floats(obj):
         return int(obj)
     if isinstance(obj, np.bool_):
         return bool(obj)
+    return obj
+
+
+def _nonfinite_to_none(obj):
+    """Recursively replace NaN/inf floats with None so the output is strict JSON (``null``)."""
+    if isinstance(obj, float):
+        return obj if math.isfinite(obj) else None
+    if isinstance(obj, dict):
+        return {k: _nonfinite_to_none(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [_nonfinite_to_none(v) for v in obj]
     return obj
 
 
@@ -146,7 +158,11 @@ def save_trial_data(trial_data_list: list, filepath: str | Path) -> None:
     filepath.parent.mkdir(parents=True, exist_ok=True)
     lines = [json.dumps({"_msw_version": MSW_FILE_VERSION})]
     lines.extend(
-        json.dumps(_round_floats(_encode_tuples(trial)), cls=_NumpyEncoder)
+        json.dumps(
+            _nonfinite_to_none(_round_floats(_encode_tuples(trial))),
+            cls=_NumpyEncoder,
+            allow_nan=False,
+        )
         for trial in trial_data_list
     )
     _atomic_write_text(filepath, "".join(line + "\n" for line in lines))
