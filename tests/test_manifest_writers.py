@@ -160,6 +160,19 @@ def test_append_acquisition_extra_cannot_replace_standard_keys(tmp_path):
     assert not (tmp_path / "session_manifest.yaml").exists()
 
 
+def test_append_acquisition_extra_merges_into_existing_entry(tmp_path):
+    init_session_manifest(tmp_path, "host")
+    append_acquisition_to_session(tmp_path, _BEHAV, started_at="t0")
+    append_acquisition_to_session(
+        tmp_path, _BEHAV, started_at="t1", extra={"cameras": ["top"]}
+    )
+
+    acqs = _read(tmp_path / "session_manifest.yaml")["acquisitions"]
+    assert len(acqs) == 1
+    assert acqs[0]["cameras"] == ["top"]
+    assert acqs[0]["started_at"] == "t0"  # standard keys of the entry are kept
+
+
 def test_append_acquisition_extra_tuple_stays_safe_loadable(tmp_path):
     """A tuple in extra is written as a plain list, not ``!!python/tuple``."""
     init_session_manifest(tmp_path, "host")

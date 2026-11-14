@@ -118,8 +118,9 @@ def append_acquisition_to_session(
         started_at: ISO start time; defaults to now.
         extra: Optional additional keys stored on the entry (e.g.
             ``{"cameras": ["top"]}`` on a video acquisition). They cannot replace
-            the standard keys (basename, started_at, ended_at, status). Readers
-            ignore keys they do not know.
+            the standard keys (basename, started_at, ended_at, status). If the
+            basename is already registered, these keys are merged into its
+            entry. Readers ignore keys they do not know.
 
     Raises:
         ValueError: If ``extra`` names one of the standard entry keys.
@@ -139,7 +140,12 @@ def append_acquisition_to_session(
         }
     )
     acquisitions = data.setdefault("acquisitions", [])
-    if not any(a.get("basename") == acquisition_basename for a in acquisitions):
+    existing = next(
+        (a for a in acquisitions if a.get("basename") == acquisition_basename), None
+    )
+    if existing is not None:
+        existing.update(extra or {})
+    else:
         acquisitions.append(
             {
                 "basename": acquisition_basename,
