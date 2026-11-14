@@ -33,12 +33,37 @@ def _read_yaml(path: Path) -> dict:
     return yaml.safe_load(path.read_text()) or {}
 
 
+class _ManifestDumper(yaml.SafeDumper):
+    """Safe dumper that writes tuples as plain lists.
+
+    Manifests are read back with ``yaml.safe_load``, so they must hold plain
+    YAML only. The default ``yaml.dump`` tags a tuple as ``!!python/tuple``,
+    which ``safe_load`` rejects, making the whole manifest unreadable. A value
+    that has no plain representation raises here instead, before the existing
+    manifest is replaced.
+    """
+
+
+_ManifestDumper.add_representer(
+    tuple, lambda dumper, data: dumper.represent_list(list(data))
+)
+
+
 def _write_yaml(path: Path, data: dict) -> None:
     tmp = path.with_suffix(".yaml.tmp")
-    with tmp.open("w") as f:
-        yaml.dump(
-            data, f, default_flow_style=False, allow_unicode=True, sort_keys=False
-        )
+    try:
+        with tmp.open("w") as f:
+            yaml.dump(
+                data,
+                f,
+                Dumper=_ManifestDumper,
+                default_flow_style=False,
+                allow_unicode=True,
+                sort_keys=False,
+            )
+    except Exception:
+        tmp.unlink(missing_ok=True)
+        raise
     tmp.replace(path)
 
 

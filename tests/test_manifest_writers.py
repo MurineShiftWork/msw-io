@@ -158,3 +158,28 @@ def test_append_acquisition_extra_cannot_replace_standard_keys(tmp_path):
     with pytest.raises(ValueError, match="status"):
         append_acquisition_to_session(tmp_path, _BEHAV, extra={"status": "complete"})
     assert not (tmp_path / "session_manifest.yaml").exists()
+
+
+def test_append_acquisition_extra_tuple_stays_safe_loadable(tmp_path):
+    """A tuple in extra is written as a plain list, not ``!!python/tuple``."""
+    init_session_manifest(tmp_path, "host")
+    append_acquisition_to_session(tmp_path, _BEHAV, extra={"cameras": ("top", "side")})
+
+    text = (tmp_path / "session_manifest.yaml").read_text()
+    assert "!!python" not in text
+    entry = yaml.safe_load(text)["acquisitions"][0]
+    assert entry["cameras"] == ["top", "side"]
+    # later writers still read the manifest back
+    finalize_acquisition_in_session(tmp_path, _BEHAV)
+    assert _read(tmp_path / "session_manifest.yaml")["acquisitions"][0]["status"] == (
+        "complete"
+    )
+
+
+def test_unrepresentable_value_keeps_existing_manifest(tmp_path):
+    init_session_manifest(tmp_path, "host")
+    before = (tmp_path / "session_manifest.yaml").read_text()
+    with pytest.raises(yaml.representer.RepresenterError):
+        append_acquisition_to_session(tmp_path, _BEHAV, extra={"cameras": object()})
+    assert (tmp_path / "session_manifest.yaml").read_text() == before
+    assert not (tmp_path / "session_manifest.yaml.tmp").exists()
