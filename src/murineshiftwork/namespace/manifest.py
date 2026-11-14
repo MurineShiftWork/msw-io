@@ -33,12 +33,37 @@ def _read_yaml(path: Path) -> dict:
     return yaml.safe_load(path.read_text()) or {}
 
 
+class _ManifestDumper(yaml.SafeDumper):
+    """Safe dumper that writes tuples as plain lists.
+
+    Manifests are read back with ``yaml.safe_load``, so they must hold plain
+    YAML only. The default ``yaml.dump`` tags a tuple as ``!!python/tuple``,
+    which ``safe_load`` rejects, making the whole manifest unreadable. A value
+    that has no plain representation raises here instead, before the existing
+    manifest is replaced.
+    """
+
+
+_ManifestDumper.add_representer(
+    tuple, lambda dumper, data: dumper.represent_list(list(data))
+)
+
+
 def _write_yaml(path: Path, data: dict) -> None:
     tmp = path.with_suffix(".yaml.tmp")
-    with tmp.open("w") as f:
-        yaml.dump(
-            data, f, default_flow_style=False, allow_unicode=True, sort_keys=False
-        )
+    try:
+        with tmp.open("w") as f:
+            yaml.dump(
+                data,
+                f,
+                Dumper=_ManifestDumper,
+                default_flow_style=False,
+                allow_unicode=True,
+                sort_keys=False,
+            )
+    except Exception:
+        tmp.unlink(missing_ok=True)
+        raise
     tmp.replace(path)
 
 
@@ -76,12 +101,33 @@ def init_session_manifest(session_container: str | Path, session_name: str) -> N
     )
 
 
+_SESSION_ENTRY_KEYS = frozenset({"basename", "started_at", "ended_at", "status"})
+
+
 def append_acquisition_to_session(
     session_container: str | Path,
     acquisition_basename: str,
     started_at: str | None = None,
+    extra: dict[str, Any] | None = None,
 ) -> None:
-    """Add an acquisition entry (status=running). Call at TaskProcess init."""
+    """Add an acquisition entry (status=running). Call at TaskProcess init.
+
+    Args:
+        session_container: Session container holding session_manifest.yaml.
+        acquisition_basename: Basename of the acquisition to register.
+        started_at: ISO start time; defaults to now.
+        extra: Optional additional keys stored on the entry (e.g.
+            ``{"cameras": ["top"]}`` on a video acquisition). They cannot replace
+            the standard keys (basename, started_at, ended_at, status). If the
+            basename is already registered, these keys are merged into its
+            entry. Readers ignore keys they do not know.
+
+    Raises:
+        ValueError: If ``extra`` names one of the standard entry keys.
+    """
+    clash = sorted(_SESSION_ENTRY_KEYS.intersection(extra or {}))
+    if clash:
+        raise ValueError(f"extra cannot set standard entry keys: {clash}")
     p = Path(session_container) / "session_manifest.yaml"
     data: dict[str, Any] = (
         _read_yaml(p)
@@ -94,13 +140,19 @@ def append_acquisition_to_session(
         }
     )
     acquisitions = data.setdefault("acquisitions", [])
-    if not any(a.get("basename") == acquisition_basename for a in acquisitions):
+    existing = next(
+        (a for a in acquisitions if a.get("basename") == acquisition_basename), None
+    )
+    if existing is not None:
+        existing.update(extra or {})
+    else:
         acquisitions.append(
             {
                 "basename": acquisition_basename,
                 "started_at": started_at or _now_iso(),
                 "ended_at": None,
                 "status": "running",
+                **(extra or {}),
             }
         )
     _write_yaml(p, data)
