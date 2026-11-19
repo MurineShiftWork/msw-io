@@ -130,6 +130,8 @@ def _read_session_yaml(session_dir: Path, fmt: dict) -> dict:
                     data["settings.task"] = payload["task_settings"]
                 if "stage" in payload:
                     data["settings.stage"] = payload["stage"]
+                if "barcodes" in payload:
+                    data["settings.barcodes"] = payload["barcodes"]
                 host_acq = (
                     payload.get("host_session")
                     or payload.get("host_acquisition")
@@ -234,7 +236,8 @@ def read_session_data(session_dir=None):
 
     Returns:
         Dict with keys: ``df``, ``settings.task``, ``settings.process``,
-        ``settings.stage``, ``settings.ephys``, ``msw_version``,
+        ``settings.stage``, ``settings.ephys``, ``settings.barcodes`` (when the rig
+        recorded the barcode settings), ``msw_version``,
         ``namespace_version``, ``artifact_format``, ``is_legacy_session``,
         ``is_complete_session``, ``is_ephys_session``.
 

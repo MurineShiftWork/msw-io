@@ -3,6 +3,9 @@
 Also includes rpi_camera_ensemble TTL-in verification for testing
 barcode decodability.
 
+Barcodes are found by the lengths they were sent with (``readers.barcodes``): the
+session's recorded settings unless the caller passes others.
+
 Usage
 -----
 from murineshiftwork.readers.alignment import align_session_to_ephys
@@ -21,30 +24,31 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from ttl_barcoder.core.barcode_ttl import BarcodeTTL
-from ttl_barcoder.core.config import BarcodeConfig
 from ttl_barcoder.hardware.bpod import BARCODE_FIRST_STATE_NAME
 
+from murineshiftwork.readers.barcodes import (
+    BarcodeConfigs,
+    decode_edge_stream,
+    session_barcode_configs,
+)
 from murineshiftwork.readers.session import read_session_data
-
-_INTER_BARCODE_GAP_S = 0.5
 
 
 def decode_ephys_barcodes(
     ephys_events: pd.DataFrame,
     barcode_bnc_line: int,
     timestamp_column: str = "timestamps",
-    barcode_config: BarcodeConfig | None = None,
+    barcode_config: BarcodeConfigs | None = None,
 ) -> list[tuple[float, int]]:
-    """Decode barcode events from an open-ephys-python-tools events DataFrame."""
-    if barcode_config is None:
-        barcode_config = BarcodeConfig.default()
+    """Decode barcode events from an open-ephys-python-tools events DataFrame.
 
-    barcoder = BarcodeTTL(barcode_config)
-
+    ``barcode_config`` is the settings the barcodes were sent with (one or several);
+    None is the ttl-barcoder defaults. ``align_session_to_ephys`` passes the
+    session's.
+    """
     line_df = (
         ephys_events[ephys_events["line"] == barcode_bnc_line]
-        .sort_values(timestamp_column)
+        .sort_values(timestamp_column, kind="stable")
         .reset_index(drop=True)
     )
 
@@ -52,25 +56,13 @@ def decode_ephys_barcodes(
         logging.warning(f"No events found on ephys line {barcode_bnc_line}.")
         return []
 
-    edge_times = line_df[timestamp_column].values
-    edge_levels = line_df["state"].values.astype(bool)
-
-    gap_indices = np.where(np.diff(edge_times) > _INTER_BARCODE_GAP_S)[0] + 1
-    segments = np.split(np.arange(len(edge_times)), gap_indices)
-
-    results = []
-    for seg_idx in segments:
-        if len(seg_idx) < 6:
-            continue
-        decoded = barcoder.decode_edges(
-            edge_timestamps=list(edge_times[seg_idx]),
-            edge_levels=list(edge_levels[seg_idx]),
-        )
-        if decoded is not None:
-            results.append(decoded)
-
+    results = decode_edge_stream(
+        line_df[timestamp_column].to_numpy(dtype=float),
+        line_df["state"].to_numpy().astype(bool),
+        barcode_config,
+    )
     logging.info(
-        f"Decoded {len(results)} barcodes from {len(segments)} edge segments "
+        f"Decoded {len(results)} barcodes from {len(line_df)} edges "
         f"on ephys line {barcode_bnc_line} (column: {timestamp_column})"
     )
     return results
@@ -81,17 +73,21 @@ def align_session_to_ephys(
     ephys_events: pd.DataFrame,
     barcode_bnc_line: int,
     timestamp_column: str = "timestamps",
-    barcode_config: BarcodeConfig | None = None,
+    barcode_config: BarcodeConfigs | None = None,
 ) -> tuple[pd.DataFrame, dict]:
-    """Align MSW session trials to the ephys clock using TTL barcode events."""
-    session_dir = Path(session_dir)
-    if barcode_config is None:
-        barcode_config = BarcodeConfig.default()
+    """Align MSW session trials to the ephys clock using TTL barcode events.
 
+    Without ``barcode_config``, the barcodes are decoded with the settings the
+    session sent them with (see ``readers.barcodes.session_barcode_configs``).
+    """
+    session_dir = Path(session_dir)
     session_data = read_session_data(session_dir)
     df = session_data.get("df")
     if df is None:
         raise ValueError(f"Could not load trial df from {session_dir}")
+    config_source = "caller"
+    if barcode_config is None:
+        barcode_config, config_source = session_barcode_configs(session_data)
 
     if "barcode_value" not in df.columns:
         raise ValueError(
@@ -215,6 +211,7 @@ def align_session_to_ephys(
         "residuals_ms": residuals_ms,
         "bpod_to_ephys": bpod_to_ephys,
         "timestamp_column_used": timestamp_column,
+        "barcode_config_source": config_source,
     }
 
     return df, result
@@ -222,12 +219,13 @@ def align_session_to_ephys(
 
 def decode_rpi_ttl_in(
     ttl_in_npz: str | Path,
-    barcode_config: BarcodeConfig | None = None,
+    barcode_config: BarcodeConfigs | None = None,
 ) -> list[tuple[float, int]]:
-    """Decode barcodes from an rpi_camera_ensemble ttl_in.npz file."""
-    if barcode_config is None:
-        barcode_config = BarcodeConfig.default()
+    """Decode barcodes from an rpi_camera_ensemble ttl_in.npz file.
 
+    ``barcode_config`` is the settings the barcodes were sent with; None is the
+    ttl-barcoder defaults. ``verify_rpi_barcode_decoding`` passes the session's.
+    """
     data = np.load(ttl_in_npz, allow_pickle=True)
     edge_times = data["timestamp"].astype(float)
     edge_levels = data["data"].astype(bool)
@@ -236,42 +234,26 @@ def decode_rpi_ttl_in(
         logging.warning(f"ttl_in file is empty: {ttl_in_npz}")
         return []
 
-    barcoder = BarcodeTTL(barcode_config)
-
-    gap_indices = np.where(np.diff(edge_times) > _INTER_BARCODE_GAP_S)[0] + 1
-    segments = np.split(np.arange(len(edge_times)), gap_indices)
-
-    results = []
-    for seg_idx in segments:
-        if len(seg_idx) < 6:
-            continue
-        decoded = barcoder.decode_edges(
-            edge_timestamps=list(edge_times[seg_idx]),
-            edge_levels=list(edge_levels[seg_idx]),
-        )
-        if decoded is not None:
-            results.append(decoded)
-
-    logging.info(
-        f"rpi ttl_in: {len(results)} decoded from {len(segments)} segments "
-        f"({len(edge_times)} total edges)"
-    )
+    results = decode_edge_stream(edge_times, edge_levels, barcode_config)
+    logging.info(f"rpi ttl_in: {len(results)} decoded from {len(edge_times)} edges")
     return results
 
 
 def verify_rpi_barcode_decoding(
     session_dir: str | Path,
     ttl_in_npz: str | Path,
-    barcode_config: BarcodeConfig | None = None,
+    barcode_config: BarcodeConfigs | None = None,
 ) -> dict:
-    """Check that rpi-recorded TTL edges are decodable and match the MSW session."""
-    if barcode_config is None:
-        barcode_config = BarcodeConfig.default()
+    """Check that rpi-recorded TTL edges are decodable and match the MSW session.
 
+    Without ``barcode_config``, the session's barcode settings are used.
+    """
     session_data = read_session_data(Path(session_dir))
     df = session_data.get("df")
     if df is None:
         raise ValueError(f"Could not load trial df from {session_dir}")
+    if barcode_config is None:
+        barcode_config, _ = session_barcode_configs(session_data)
 
     if "barcode_value" not in df.columns:
         raise ValueError("No barcode_value column: was this a barcode test session?")
