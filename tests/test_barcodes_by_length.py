@@ -124,3 +124,16 @@ def test_session_yaml_barcodes_reach_the_reader(tmp_path):
     path.write_text(yaml.safe_dump({"msw_format_version": 2, "barcodes": [record]}))
     data = _read_session_yaml(tmp_path, {})
     assert session_barcode_configs(data) == ([SLOW], "session")
+
+
+def test_settings_from_a_session_directory(tmp_path):
+    record = {**SLOW.model_dump(mode="json"), "bit_order": "lsb_first"}
+    path = tmp_path / "s1__20260101_000000.msw.session.yaml"
+    path.write_text(yaml.safe_dump({"msw_format_version": 2, "barcodes": [record]}))
+    assert session_barcode_configs(tmp_path) == ([SLOW], "session")
+    assert session_barcode_configs(str(tmp_path)) == ([SLOW], "session")
+
+
+def test_other_inputs_are_refused():
+    with pytest.raises(TypeError, match="session directory"):
+        session_barcode_configs(["settings.barcodes"])

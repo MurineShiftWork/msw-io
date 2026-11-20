@@ -17,6 +17,7 @@ than any fixed gap that also separates short barcodes.
 from __future__ import annotations
 
 import logging
+import os
 from collections.abc import Iterable, Sequence
 from typing import TypeAlias
 
@@ -49,12 +50,26 @@ def _from_keys(values: dict, keys: dict[str, str]) -> BarcodeConfig | None:
     return BarcodeConfig(**fields) if fields else None
 
 
-def session_barcode_configs(session_data: dict) -> tuple[list[BarcodeConfig], str]:
+def session_barcode_configs(
+    session_data: dict | str | os.PathLike,
+) -> tuple[list[BarcodeConfig], str]:
     """The barcode settings a session sent with, and where they came from.
 
-    ``session_data`` is the dict from ``read_session_data``. The source is
-    ``"session"``, ``"task_settings"`` or ``"default"``.
+    ``session_data`` is the dict from ``read_session_data``, or the session
+    directory, which is then read with it. The source is ``"session"``,
+    ``"task_settings"`` or ``"default"``.
     """
+    if isinstance(session_data, (str, os.PathLike)):
+        # imported here: the session reader is heavy and analysis code that
+        # already holds the dict should not need it
+        from murineshiftwork.readers.session import read_session_data
+
+        session_data = read_session_data(session_data)
+    if not isinstance(session_data, dict):
+        raise TypeError(
+            "session_data must be the dict from read_session_data or a session "
+            f"directory, not {type(session_data).__name__}"
+        )
     recorded = session_data.get("settings.barcodes") or []
     configs = [
         BarcodeConfig(**{k: r[k] for k in _FIELDS if k in r})
