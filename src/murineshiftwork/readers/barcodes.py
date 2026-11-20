@@ -1,7 +1,7 @@
 """Barcode settings of a session, and decoding an edge stream with them.
 
-A barcode's length is set per setup and task (hotel's sequence task sends 100 ms bits,
-the default is 35 ms), so a decoder needs the settings the session sent with. They are
+A barcode's length is set per setup and task (a setup recorded on video may send 100 ms
+bits, the default is 35 ms), so a decoder needs the settings the session sent with. They are
 looked up in this order:
 
 1. ``barcodes:`` in session.yaml, written by the rig when a barcode is first sent;
