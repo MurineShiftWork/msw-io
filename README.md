@@ -64,6 +64,9 @@ msw-io-migrate /data --audit
 
 See the [namespace migration](https://murineshiftwork.github.io/msw-io/migration/) page.
 
+`msw data validate PATH...` checks session containers and acquisitions (or a
+tree holding them); exit status 0 when all are valid, 1 on any issue.
+
 ## Documentation
 
 Full documentation including API reference: <https://murineshiftwork.github.io/msw-io>

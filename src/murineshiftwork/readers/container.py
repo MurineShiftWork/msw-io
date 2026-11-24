@@ -25,6 +25,10 @@ from pathlib import Path
 
 import yaml
 
+from murineshiftwork.namespace.manifest import (
+    ACQUISITION_STATUSES,
+    ACQUISITION_STATUSES_ENDED_OK,
+)
 from murineshiftwork.namespace.paths import parse_acquisition_basename
 from murineshiftwork.readers.camera import (
     _BACKENDS,
@@ -49,10 +53,14 @@ class AcquisitionInfo:
         backend: Camera backend (``"flir"``/``"rce"``) when ``kind == "camera"``.
         on_disk: The directory exists in the container.
         in_manifest: The manifest lists this acquisition.
-        status: Manifest status (``running``/``complete``/...), or ``None``.
+        status: Manifest status (one of
+            :data:`~murineshiftwork.namespace.manifest.ACQUISITION_STATUSES`
+            when written by MSW), or ``None``.
         is_complete: Per-acquisition completeness; ``None`` until computed by
             :func:`validate_session_container` (or if it cannot be determined,
             e.g. a camera backend package is not installed).
+        remote: The manifest entry has ``location: remote`` (recorded on another
+            host, e.g. an Open Ephys recording); it has no local directory.
     """
 
     basename: str
@@ -63,6 +71,7 @@ class AcquisitionInfo:
     in_manifest: bool
     status: str | None = None
     is_complete: bool | None = None
+    remote: bool = False
 
 
 @dataclass
@@ -73,6 +82,8 @@ class SessionContainerReport:
     acquisitions: list[AcquisitionInfo] = field(default_factory=list)
     on_disk_not_in_manifest: list[str] = field(default_factory=list)
     in_manifest_not_on_disk: list[str] = field(default_factory=list)
+    status_issues: list[str] = field(default_factory=list)
+    remote: list[str] = field(default_factory=list)
 
     @property
     def is_consistent(self) -> bool:
@@ -174,6 +185,7 @@ def enumerate_acquisitions(container: str | Path) -> list[AcquisitionInfo]:
                 on_disk=basename in disk,
                 in_manifest=basename in manifest,
                 status=entry.get("status"),
+                remote=entry.get("location") == "remote",
             )
         )
     return infos
@@ -196,16 +208,35 @@ def _completeness(container: Path, info: AcquisitionInfo) -> bool | None:
     return None
 
 
-def validate_session_container(container: str | Path) -> SessionContainerReport:
+def _status_issue(info: AcquisitionInfo, running_is_issue: bool) -> str | None:
+    """Describe a manifest status that needs attention, or None."""
+    status = info.status
+    if status is None or status in ACQUISITION_STATUSES_ENDED_OK:
+        return None
+    if status == "running":
+        return f"{info.basename}: status 'running'" if running_is_issue else None
+    if status in ACQUISITION_STATUSES:
+        return f"{info.basename}: ended with status '{status}'"
+    return f"{info.basename}: unknown status '{status}'"
+
+
+def validate_session_container(
+    container: str | Path, running_is_issue: bool = False
+) -> SessionContainerReport:
     """Reconcile a container's on-disk acquisitions against its manifest.
 
     Enumerates acquisitions, computes per-acquisition completeness, and reports
     disk/manifest mismatches: acquisitions present on disk but unregistered
     (e.g. an old manifest predating camera registration), and acquisitions
     listed in the manifest but missing on disk (a dangling or aborted capture).
+    Manifest statuses other than a normal end (``complete``/``stopped``) go to
+    ``status_issues``; ``running`` only when ``running_is_issue`` is set, since a
+    live session is legitimately running. Entries with ``location: remote`` live
+    on another host: they go to ``remote``, not ``in_manifest_not_on_disk``.
 
     Args:
         container: The session container directory.
+        running_is_issue: Report entries still ``running`` as issues.
 
     Returns:
         A :class:`SessionContainerReport`.
@@ -221,6 +252,12 @@ def validate_session_container(container: str | Path) -> SessionContainerReport:
             i.basename for i in infos if i.on_disk and not i.in_manifest
         ],
         in_manifest_not_on_disk=[
-            i.basename for i in infos if i.in_manifest and not i.on_disk
+            i.basename
+            for i in infos
+            if i.in_manifest and not i.on_disk and not i.remote
+        ],
+        remote=[i.basename for i in infos if i.remote],
+        status_issues=[
+            msg for i in infos if (msg := _status_issue(i, running_is_issue))
         ],
     )

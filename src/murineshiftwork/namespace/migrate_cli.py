@@ -5,7 +5,8 @@ the same flags and return the same exit status: 0 when clean, 1 when collisions
 were left in place (or, with ``--audit``, when anything was flagged), 2 when the
 data root is refused.
 
-``msw data migrate`` is registered through the ``msw.cli`` entry point group;
+``msw data migrate`` (and ``msw data validate``, from
+:mod:`murineshiftwork.readers.validate_cli`) is registered through the ``msw.cli`` entry point group;
 the ``msw`` parser calls :func:`register` with its subparsers and later calls the
 selected ``func`` with every parsed argument as a keyword.
 """
@@ -161,7 +162,10 @@ def _dispatch(**kwargs: object) -> None:
 
 
 def register(sub_parsers: argparse._SubParsersAction) -> None:
-    """Add ``msw data migrate`` to the ``msw`` command line (``msw.cli`` plugin)."""
+    """Add ``msw data migrate`` and ``msw data validate`` to the ``msw`` command
+    line (``msw.cli`` plugin)."""
+    from murineshiftwork.readers import validate_cli
+
     data = sub_parsers.add_parser("data", help="Data tree tools (msw-io)")
     data_sub = data.add_subparsers(dest="data_command", metavar="command")
     data_sub.required = True
@@ -173,3 +177,4 @@ def register(sub_parsers: argparse._SubParsersAction) -> None:
     )
     add_arguments(mig)
     mig.set_defaults(func=_dispatch)
+    validate_cli.register(data_sub)

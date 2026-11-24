@@ -34,6 +34,12 @@
     options:
       show_source: false
 
+::: murineshiftwork.readers.container.validate_session_container
+    options:
+      show_source: false
+
+::: murineshiftwork.namespace.manifest.ACQUISITION_STATUSES
+
 ### Low-level reader
 
 ::: murineshiftwork.readers.session.read_session_data

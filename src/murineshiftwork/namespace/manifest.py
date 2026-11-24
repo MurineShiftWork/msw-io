@@ -101,6 +101,26 @@ def init_session_manifest(session_container: str | Path, session_name: str) -> N
     )
 
 
+ACQUISITION_STATUSES = ("running", "complete", "stopped", "aborted", "interrupted")
+"""Status vocabulary of a session manifest acquisition entry.
+
+- ``running``: written at start; still there after exit means the process died.
+- ``complete``: the task reached its own end (e.g. a trial limit).
+- ``stopped``: the operator ended the session (Ctrl-C); the normal end for
+  tasks with no trial limit.
+- ``aborted``: the task raised and the session was ended on the error.
+- ``interrupted``: the process died; set when the next session on the same
+  setup finds the stale ``running`` entry.
+
+The writers do not enforce it (``status`` stays a free string); validators do.
+
+An entry with ``location: remote`` (plus e.g. ``host``, ``path``, ``backend``,
+set via ``extra``) was recorded on another host and has no local directory.
+"""
+
+ACQUISITION_STATUSES_ENDED_OK = ("complete", "stopped")
+"""Statuses of an acquisition that ended normally."""
+
 _SESSION_ENTRY_KEYS = frozenset({"basename", "started_at", "ended_at", "status"})
 
 
