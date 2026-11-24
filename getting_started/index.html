@@ -652,25 +652,36 @@ task or sub-protocol run within a continuous recording):</p>
 <a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">passed</span><span class="p">)</span>
 <a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">issues</span><span class="p">)</span>
 </code></pre></div>
+<p>From the command line (with msw-core installed), <code>msw data validate</code> runs the
+session, container and namespace checks over session containers, acquisition
+dirs, or any tree holding them:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>msw<span class="w"> </span>data<span class="w"> </span>validate<span class="w"> </span>/data/mouse_01<span class="w"> </span>/data/mouse_02<span class="w">   </span><span class="c1"># one OK/FAIL line per session</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>msw<span class="w"> </span>data<span class="w"> </span>validate<span class="w"> </span>/data/mouse_01<span class="w"> </span>--json<span class="w">           </span><span class="c1"># machine-readable report</span>
+</code></pre></div>
+<p>Exit status is 0 when all are valid, 1 on any issue, 2 for a bad path or no
+session found. A container's manifest status <code>complete</code> or <code>stopped</code> is a normal
+end; <code>aborted</code>, <code>interrupted</code> and unknown values are issues, and <code>running</code> is one
+only with <code>--running-is-issue</code> (a live session is running). The vocabulary is
+<code>murineshiftwork.namespace.manifest.ACQUISITION_STATUSES</code>.</p>
 <h2 id="generating-session-paths">Generating session paths<a class="headerlink" href="#generating-session-paths" title="Permanent link">&para;</a></h2>
 <p>Use <code>generate_session_paths</code> at the start of each acquisition to get the
 canonical directory structure for saving data:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">murineshiftwork.namespace</span><span class="w"> </span><span class="kn">import</span> <span class="n">generate_session_paths</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="n">paths</span> <span class="o">=</span> <span class="n">generate_session_paths</span><span class="p">(</span><span class="s2">"mouse_01"</span><span class="p">,</span> <span class="s2">"gonogo"</span><span class="p">,</span> <span class="s2">"/data"</span><span class="p">,</span> <span class="n">printout</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
-<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="nb">print</span><span class="p">(</span><span class="n">paths</span><span class="p">[</span><span class="s2">"session_folder"</span><span class="p">])</span>    <span class="c1"># /data/mouse_01/session__...session_gonogo/mouse_01__...gonogo</span>
-<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="nb">print</span><span class="p">(</span><span class="n">paths</span><span class="p">[</span><span class="s2">"session_basename"</span><span class="p">])</span>  <span class="c1"># mouse_01__20260514_143022_123456__gonogo</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">murineshiftwork.namespace</span><span class="w"> </span><span class="kn">import</span> <span class="n">generate_session_paths</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">paths</span> <span class="o">=</span> <span class="n">generate_session_paths</span><span class="p">(</span><span class="s2">"mouse_01"</span><span class="p">,</span> <span class="s2">"gonogo"</span><span class="p">,</span> <span class="s2">"/data"</span><span class="p">,</span> <span class="n">printout</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="nb">print</span><span class="p">(</span><span class="n">paths</span><span class="p">[</span><span class="s2">"session_folder"</span><span class="p">])</span>    <span class="c1"># /data/mouse_01/session__...session_gonogo/mouse_01__...gonogo</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="nb">print</span><span class="p">(</span><span class="n">paths</span><span class="p">[</span><span class="s2">"session_basename"</span><span class="p">])</span>  <span class="c1"># mouse_01__20260514_143022_123456__gonogo</span>
 </code></pre></div>
 <p>The <code>murineshiftwork</code> acquisition stack calls this internally; use it
 directly in custom scripts that create session directories.</p>
 <h2 id="saving-and-loading-trial-data">Saving and loading trial data<a class="headerlink" href="#saving-and-loading-trial-data" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">murineshiftwork.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">save_trial_data</span><span class="p">,</span> <span class="n">load_trial_data</span>
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
-<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">trials</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">"trial"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">"correct"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"rt"</span><span class="p">:</span> <span class="mf">0.312</span><span class="p">},</span> <span class="o">...</span><span class="p">]</span>
-<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="n">save_trial_data</span><span class="p">(</span><span class="n">trials</span><span class="p">,</span> <span class="s2">"/data/.../session.msw.jsonl"</span><span class="p">)</span>
-<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>
-<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="n">loaded</span> <span class="o">=</span> <span class="n">load_trial_data</span><span class="p">(</span><span class="s2">"/data/.../session.msw.jsonl"</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">murineshiftwork.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">save_trial_data</span><span class="p">,</span> <span class="n">load_trial_data</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="n">trials</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">"trial"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">"correct"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"rt"</span><span class="p">:</span> <span class="mf">0.312</span><span class="p">},</span> <span class="o">...</span><span class="p">]</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="n">save_trial_data</span><span class="p">(</span><span class="n">trials</span><span class="p">,</span> <span class="s2">"/data/.../session.msw.jsonl"</span><span class="p">)</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="n">loaded</span> <span class="o">=</span> <span class="n">load_trial_data</span><span class="p">(</span><span class="s2">"/data/.../session.msw.jsonl"</span><span class="p">)</span>
 </code></pre></div>
 <p>Numpy arrays are stored as lists; Python tuples are preserved across the
 round-trip via a <code>{"__tuple__": [...]}</code> encoding.</p>
