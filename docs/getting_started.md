@@ -60,6 +60,21 @@ print(result.passed)
 print(result.issues)
 ```
 
+From the command line (with msw-core installed), `msw data validate` runs the
+session, container and namespace checks over session containers, acquisition
+dirs, or any tree holding them:
+
+```bash
+msw data validate /data/mouse_01 /data/mouse_02   # one OK/FAIL line per session
+msw data validate /data/mouse_01 --json           # machine-readable report
+```
+
+Exit status is 0 when all are valid, 1 on any issue, 2 for a bad path or no
+session found. A container's manifest status `complete` or `stopped` is a normal
+end; `aborted`, `interrupted` and unknown values are issues, and `running` is one
+only with `--running-is-issue` (a live session is running). The vocabulary is
+`murineshiftwork.namespace.manifest.ACQUISITION_STATUSES`.
+
 ## Generating session paths
 
 Use `generate_session_paths` at the start of each acquisition to get the
