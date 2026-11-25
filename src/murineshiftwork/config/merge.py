@@ -56,6 +56,8 @@ def deep_merge(
     provenance: dict[KeyPath, L],
     label: L | Callable[[KeyPath], L],
     path: KeyPath = (),
+    *,
+    none_inherits: bool = False,
 ) -> None:
     """Merge ``src`` into ``dst`` in place and record ``label`` for each leaf written.
 
@@ -66,16 +68,20 @@ def deep_merge(
         label: the label of ``src``, or a function from a leaf's full key path to its
             label when the leaves of ``src`` come from different places.
         path: key path of ``dst`` inside the document the provenance describes.
+        none_inherits: when true, a ``None`` in ``src`` keeps the value already in
+            ``dst`` (it is written only where ``dst`` has nothing).
     """
     for k, v in src.items():
         key = str(k)
         p = (*path, key)
+        if v is None and none_inherits and key in dst:
+            continue
         if isinstance(v, Mapping) and isinstance(dst.get(key), dict):
             if not v:
                 continue
             if not dst[key]:
                 provenance.pop(p, None)
-            deep_merge(dst[key], v, provenance, label, p)
+            deep_merge(dst[key], v, provenance, label, p, none_inherits=none_inherits)
             continue
         if key in dst:
             _drop_below(provenance, p)

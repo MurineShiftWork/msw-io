@@ -14,7 +14,7 @@ Order of work:
 4. Merge settings by level: package defaults < machine < setup < task < mode <
    subject < run. At every level only the running task's ``tasks.<task>`` block
    is kept (shared keys plain, task keys under the task's name), so one task's
-   settings never reach another.
+   settings never reach another. A ``null`` at a level inherits the value below.
 5. Collect secret names, record provenance, and hash the payload.
 """
 
@@ -44,6 +44,7 @@ from murineshiftwork.config.run import (
     Level,
     ResolvedMachine,
     ResolvedRun,
+    RunSource,
     Source,
     sha256_hex,
 )
@@ -96,14 +97,16 @@ def resolve(
     run_overrides: Mapping[str, Any] | None = None,
     package_defaults: Mapping[str, Any] | None = None,
     *,
-    revision: str | None = None,
+    package_versions: Mapping[str, str] | None = None,
+    run_id: str | None = None,
+    source: RunSource | None = None,
     load_reference: ReferenceLoader | None = None,
     file_references: Mapping[str, tuple[str, ...]] = FILE_REFERENCES,
 ) -> ResolvedRun:
     """Resolve one run into a self-contained, hashed payload.
 
     Args:
-        document: the config, either as loaded (with sources, root and revision)
+        document: the config, either as loaded (with sources, root and source)
             or as a bare document (provenance then has levels but no files).
         setup: setup name; selects the machine and the entities.
         subject: subject name.
@@ -113,7 +116,11 @@ def resolve(
         run_overrides: settings for this run only, the highest level; the same
             shape as any level's settings.
         package_defaults: the task package's own settings, the lowest level.
-        revision: source revision to record; defaults to the loaded config's.
+        package_versions: distribution name to version of the packages that
+            supplied ``package_defaults``, recorded in the payload.
+        run_id: identifier to record for this run; none is generated, so
+            resolution stays deterministic.
+        source: where the config came from; defaults to the loaded config's.
         load_reference: hook that inlines referenced files; defaults to reading
             below the loaded config's root.
         file_references: device fields that hold a file reference, by type.
@@ -129,7 +136,7 @@ def resolve(
         loaded = document
         doc = loaded.document
         sources = loaded.sources
-        revision = revision if revision is not None else loaded.revision
+        source = source or loaded.source
         if load_reference is None and loaded.root is not None:
             load_reference = file_reference_loader(loaded.root)
     else:
@@ -209,9 +216,8 @@ def resolve(
     settings_prov: dict[KeyPath, Source] = {}
     for level, block, doc_prefix in levels:
         scoped = to_jsonable(scope_settings(block, task))
-        deep_merge(
-            settings, scoped, settings_prov, _labeller(level, doc_prefix, sources)
-        )
+        label = _labeller(level, doc_prefix, sources)
+        deep_merge(settings, scoped, settings_prov, label, none_inherits=True)
     settings.setdefault("tasks", {}).setdefault(task, {})
     for key, src in settings_prov.items():
         provenance[("settings", *key)] = src
@@ -235,7 +241,9 @@ def resolve(
         state=to_jsonable(subject_cfg.state.get(task, {})),
         identity=subject_cfg.identity,
         provenance={to_pointer(k): v for k, v in sorted(provenance.items())},
-        revision=revision,
+        packages=dict(package_versions or {}),
+        run_id=run_id,
+        source=source or RunSource(),
     )
     payload = run.model_dump(mode="json", exclude={"provenance", "secrets"})
     run = run.model_copy(update={"secrets": find_secrets(payload)})

@@ -6,10 +6,12 @@ the running task, the subject's state for that task, and provenance for every va
 Host-specific work (device nodes from ``port_by_path``, secret values, local paths)
 happens after it, on the host that executes the run.
 
-It is plain JSON data. ``content_hash`` is the sha256 of the canonical JSON of the
-payload without ``content_hash`` and ``revision``, so the same config content gives the
-same hash wherever and from whichever checkout it was resolved, and a receiver can
-check that the payload arrived unchanged.
+It is plain JSON data. ``payload_sha256`` is the sha256 of the canonical JSON of the
+payload without the fields that identify one resolution rather than its content
+(``payload_sha256``, ``run_id``, ``source``). The same config content therefore gives
+the same hash wherever and from whichever checkout it was resolved, two sessions with
+the same hash ran the same config, and a receiver can check that the payload arrived
+unchanged.
 """
 
 from __future__ import annotations
@@ -36,7 +38,7 @@ LEVELS: tuple[Level, ...] = (
     "run",
 )
 
-HASH_EXCLUDE = frozenset({"content_hash", "revision"})
+HASH_EXCLUDE = frozenset({"payload_sha256", "run_id", "source"})
 
 
 def canonical_json(value: Any) -> str:
@@ -74,6 +76,23 @@ class Source(_Strict):
     file: str | None = None
 
 
+class RunSource(_Strict):
+    """Where the config of a run came from.
+
+    Attributes:
+        kind: kind of source (``dir``, ``git``, ``db``, ``server``).
+        id: stable name of the source; prefixes provenance labels when set.
+        revision: revision of the source when it has one; version control is
+            never assumed.
+        dirty: whether the source had uncommitted changes, when known.
+    """
+
+    kind: str = "dir"
+    id: str | None = None
+    revision: str | None = None
+    dirty: bool | None = None
+
+
 class ResolvedMachine(_Strict):
     """The machine the run's setup belongs to, without its entity collections."""
 
@@ -103,9 +122,12 @@ class ResolvedRun(_Strict):
             ``{secret: name}`` reference; values are never resolved here.
         provenance: JSON pointer (into this payload) to the level and file of
             each value that came from config.
-        revision: source revision of the config, when the caller supplied one.
-        content_hash: sha256 of the canonical JSON of the payload without
-            ``content_hash`` and ``revision``.
+        packages: distribution name to version of the packages whose defaults
+            were used, as the caller reports them.
+        run_id: identifier of this run, when the caller assigns one.
+        source: where the config came from.
+        payload_sha256: sha256 of the canonical JSON of the payload without
+            ``payload_sha256``, ``run_id`` and ``source``.
     """
 
     schema_version: Literal[3] = SCHEMA_VERSION
@@ -123,27 +145,29 @@ class ResolvedRun(_Strict):
     identity: Identity = Field(default_factory=Identity)
     secrets: dict[str, str] = Field(default_factory=dict)
     provenance: dict[str, Source] = Field(default_factory=dict)
-    revision: str | None = None
-    content_hash: str = ""
+    packages: dict[str, str] = Field(default_factory=dict)
+    run_id: str | None = None
+    source: RunSource = Field(default_factory=RunSource)
+    payload_sha256: str = ""
 
     def compute_hash(self) -> str:
         """Return the content hash of this payload as it is now."""
         return sha256_hex(self.model_dump(mode="json", exclude=set(HASH_EXCLUDE)))
 
     def with_hash(self) -> ResolvedRun:
-        """Return a copy whose ``content_hash`` matches its payload."""
-        return self.model_copy(update={"content_hash": self.compute_hash()})
+        """Return a copy whose ``payload_sha256`` matches its payload."""
+        return self.model_copy(update={"payload_sha256": self.compute_hash()})
 
     def verify(self) -> None:
-        """Check that ``content_hash`` matches the payload.
+        """Check that ``payload_sha256`` matches the payload.
 
         Raises:
             ContentHashError: when it does not.
         """
         actual = self.compute_hash()
-        if self.content_hash != actual:
+        if self.payload_sha256 != actual:
             raise ContentHashError(
-                f"content hash mismatch: payload says {self.content_hash!r}, "
+                f"payload hash mismatch: payload says {self.payload_sha256!r}, "
                 f"content gives {actual!r}"
             )
 

@@ -4,7 +4,7 @@ Typical use::
 
     from murineshiftwork.config import load_config, resolve
 
-    config = load_config("path/to/config", revision="<commit>")
+    config = load_config("path/to/config", source=RunSource(revision="<commit>"))
     run = resolve(config, setup="a", subject="m1", task="sequence")
     payload = run.to_json()  # send to the executing host
     same = ResolvedRun.from_json(payload)  # checks the content hash
@@ -58,6 +58,7 @@ from murineshiftwork.config.run import (
     Level,
     ResolvedMachine,
     ResolvedRun,
+    RunSource,
     Source,
     canonical_json,
 )
@@ -82,6 +83,7 @@ __all__ = [
     "RequirementError",
     "ResolvedMachine",
     "ResolvedRun",
+    "RunSource",
     "SchemaVersionError",
     "SecretRef",
     "Settings",

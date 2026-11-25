@@ -10,9 +10,10 @@ Every fragment must declare ``schema_version: 3`` at the top. A file without it,
 with another version, is refused before anything is merged, so a tree never mixes
 versions.
 
-Source labels are paths relative to the config root, so two checkouts of the same
-revision in different places give the same provenance. A file outside the root is
-labelled by its name only: its location is a fact of the host, not of the config.
+Source labels are paths relative to the config root, prefixed ``<source id>:`` when
+the source has an id, so two checkouts of the same revision in different places give
+the same provenance. A file outside the root is labelled by its name only: its
+location is a fact of the host, not of the config.
 """
 
 from __future__ import annotations
@@ -27,6 +28,7 @@ import yaml
 from murineshiftwork.config.errors import ConfigError, SchemaVersionError
 from murineshiftwork.config.merge import KeyPath, deep_merge, to_jsonable
 from murineshiftwork.config.models import SCHEMA_VERSION, SECTIONS, ConfigDocument
+from murineshiftwork.config.run import RunSource
 
 FRAGMENT_SUFFIXES = (".yaml", ".yml")
 
@@ -42,15 +44,15 @@ class LoadedConfig:
             ``"1"``) and include the section (``("setups", "a", "machine")``).
         root: config root; referenced files (camera configs) are read relative to
             it. ``None`` for fragments that did not come from a directory.
-        revision: source revision of the config (a commit, a tag, a content id),
-            as given by the caller; never derived here.
+        source: where the config came from, as given by the caller; revision
+            and dirty state are never derived here.
         files: source labels in the order they were merged.
     """
 
     document: ConfigDocument
     sources: dict[KeyPath, str] = field(default_factory=dict)
     root: Path | None = None
-    revision: str | None = None
+    source: RunSource = field(default_factory=RunSource)
     files: list[str] = field(default_factory=list)
 
 
@@ -85,14 +87,14 @@ def merge_fragments(
     fragments: Iterable[tuple[str, Any]],
     *,
     root: Path | None = None,
-    revision: str | None = None,
+    source: RunSource | None = None,
 ) -> LoadedConfig:
     """Merge already-parsed fragments in order, the last one winning per key path.
 
     Args:
         fragments: ``(source label, parsed fragment)`` pairs, lowest priority first.
         root: config root recorded on the result, for inlining referenced files.
-        revision: source revision recorded on the result.
+        source: where the fragments came from, recorded on the result.
 
     Raises:
         SchemaVersionError: when any fragment is not schema version 3; nothing is
@@ -110,7 +112,7 @@ def merge_fragments(
         document=document,
         sources=sources,
         root=root,
-        revision=revision,
+        source=source or RunSource(),
         files=[label for label, _ in checked],
     )
 
@@ -129,19 +131,23 @@ def tree_files(root: Path) -> list[Path]:
     return files
 
 
-def source_label(path: Path, root: Path) -> str:
-    """Return the provenance label of a file: relative to ``root``, else its name."""
+def source_label(path: Path, root: Path, source_id: str | None = None) -> str:
+    """Return the provenance label of a file: relative to ``root``, else its name.
+
+    The label is prefixed ``<source_id>:`` when a source id is given.
+    """
     try:
-        return path.resolve().relative_to(root.resolve()).as_posix()
+        label = path.resolve().relative_to(root.resolve()).as_posix()
     except ValueError:
-        return path.name
+        label = path.name
+    return f"{source_id}:{label}" if source_id else label
 
 
 def load_config(
     root: str | Path,
     extra_files: Sequence[str | Path] = (),
     *,
-    revision: str | None = None,
+    source: RunSource | None = None,
 ) -> LoadedConfig:
     """Load a config tree and extra files into one document.
 
@@ -150,8 +156,8 @@ def load_config(
             ``subjects/``; a missing section directory is skipped.
         extra_files: files merged after the tree, in order (a host-only fragment,
             per-run override files).
-        revision: source revision to record; the loader never inspects version
-            control itself.
+        source: where the tree comes from (kind, id, revision, dirty); the
+            loader never inspects version control itself.
 
     Raises:
         SchemaVersionError: when any file is not schema version 3.
@@ -160,9 +166,11 @@ def load_config(
         pydantic.ValidationError: when the merged document does not validate.
     """
     root = Path(root)
+    source = source or RunSource()
     paths = [*tree_files(root), *(Path(p) for p in extra_files)]
     fragments = []
     for path in paths:
         with path.open(encoding="utf-8") as fh:
-            fragments.append((source_label(path, root), yaml.safe_load(fh)))
-    return merge_fragments(fragments, root=root, revision=revision)
+            label = source_label(path, root, source.id)
+            fragments.append((label, yaml.safe_load(fh)))
+    return merge_fragments(fragments, root=root, source=source)

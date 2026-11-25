@@ -23,6 +23,7 @@ from murineshiftwork.config import (
     ContentHashError,
     RequirementError,
     ResolvedRun,
+    RunSource,
     SchemaVersionError,
     UnknownNameError,
     UnresolvedReferenceError,
@@ -62,7 +63,7 @@ PS = "/tasks/probabilistic_switching"
 
 @pytest.fixture
 def config():
-    return load_config(TREE, revision="rev-1")
+    return load_config(TREE, source=RunSource(revision="rev-1"))
 
 
 def run_of(config, setup, subject, task, **kw):
@@ -202,7 +203,7 @@ def test_alfa_lgcyx1_sequence(config):
     assert set(run.boxes) == {"kappa"}
     assert run.state == {"curriculum": {"level": 12, "updated": "2026-10-16T16:59:47"}}
     assert run.secrets == {"/machine/services/labwatch/token": "labwatch_token"}
-    assert run.revision == "rev-1"
+    assert run.source == RunSource(revision="rev-1")
     prov = run.provenance
     assert (
         prov["/settings/tasks/sequence/curriculum/enabled"].file
@@ -321,17 +322,13 @@ def test_json_and_yaml_round_trip(config):
 def test_hash_is_stable_across_checkouts(tmp_path):
     shutil.copytree(TREE, tmp_path / "one")
     shutil.copytree(TREE, tmp_path / "two" / "nested")
-    a = run_of(
-        load_config(tmp_path / "one", revision="r1"), "alfa", "lgcyX1", "sequence"
-    )
-    b = run_of(
-        load_config(tmp_path / "two" / "nested", revision="r2"),
-        "alfa",
-        "lgcyX1",
-        "sequence",
-    )
-    assert a.content_hash == b.content_hash
-    assert a.model_dump(exclude={"revision"}) == b.model_dump(exclude={"revision"})
+    one = load_config(tmp_path / "one", source=RunSource(revision="r1"))
+    two = load_config(tmp_path / "two" / "nested", source=RunSource(kind="git"))
+    a = run_of(one, "alfa", "lgcyX1", "sequence", run_id="run-1")
+    b = run_of(two, "alfa", "lgcyX1", "sequence", run_id="run-2")
+    assert a.payload_sha256 == b.payload_sha256
+    exclude = {"source", "run_id"}
+    assert a.model_dump(exclude=exclude) == b.model_dump(exclude=exclude)
 
 
 def test_hash_follows_content(config):
@@ -343,7 +340,7 @@ def test_hash_follows_content(config):
         "sequence",
         run_overrides={"barcode": {"bits": 21}},
     )
-    assert run.content_hash != other.content_hash
+    assert run.payload_sha256 != other.payload_sha256
     tampered = json.loads(run.to_json())
     tampered["settings"]["barcode"]["bits"] = 21
     with pytest.raises(ContentHashError):
@@ -356,3 +353,31 @@ def test_payload_refuses_other_schema_version(config):
     data["schema_version"] = 2
     with pytest.raises(SchemaVersionError):
         ResolvedRun.from_json(json.dumps(data))
+
+
+def test_null_inherits_the_level_below(config):
+    run = run_of(
+        config,
+        "setup-1",
+        "lgcyX2",
+        "probabilistic_switching",
+        run_overrides={"barcode": {"bit_duration_ms": None}, "new_key": None},
+    )
+    levels = settings_levels(run)
+    assert levels["/barcode/bit_duration_ms"] == (100.0, "setup")
+    assert levels["/new_key"] == (None, "run")
+
+
+def test_source_id_prefixes_provenance_and_packages_are_recorded():
+    loaded = load_config(TREE, source=RunSource(kind="git", id="configs"))
+    run = run_of(
+        loaded,
+        "alfa",
+        "lgcyX1",
+        "sequence",
+        package_versions={"task-package": "1.2.3"},
+    )
+    src = run.provenance["/settings/calibration_policy/stale_days"]
+    assert src.file == "configs:setups/alfa.yaml"
+    assert run.packages == {"task-package": "1.2.3"}
+    assert run.source.kind == "git"

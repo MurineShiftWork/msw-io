@@ -406,6 +406,13 @@
       "file": "setups/alfa.yaml"
     }
   },
-  "revision": "rev-1",
-  "content_hash": "be6a8c4496d70a7257e12e9775cf006b37886ce572c0183909170fd5f3afd8ee"
+  "packages": {},
+  "run_id": null,
+  "source": {
+    "kind": "dir",
+    "id": null,
+    "revision": "rev-1",
+    "dirty": null
+  },
+  "payload_sha256": "47c73ae9998792a29dc9b898d9c9aedbcf557aa9aed444f737fde94b6da13b10"
 }
