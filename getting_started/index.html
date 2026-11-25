@@ -659,8 +659,9 @@ dirs, or any tree holding them:</p>
 <a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>msw<span class="w"> </span>data<span class="w"> </span>validate<span class="w"> </span>/data/mouse_01<span class="w"> </span>--json<span class="w">           </span><span class="c1"># machine-readable report</span>
 </code></pre></div>
 <p>Exit status is 0 when all are valid, 1 on any issue, 2 for a bad path or no
-session found. A container's manifest status <code>complete</code> or <code>stopped</code> is a normal
-end; <code>aborted</code>, <code>interrupted</code> and unknown values are issues, and <code>running</code> is one
+session found. A container's manifest status <code>complete</code>, <code>stopped</code> or <code>partial</code> (some
+cameras failed, the rest recorded) is a normal end; <code>aborted</code>, <code>interrupted</code>,
+<code>failed</code> (no camera recorded) and unknown values are issues, and <code>running</code> is one
 only with <code>--running-is-issue</code> (a live session is running). The vocabulary is
 <code>murineshiftwork.namespace.manifest.ACQUISITION_STATUSES</code>.</p>
 <h2 id="generating-session-paths">Generating session paths<a class="headerlink" href="#generating-session-paths" title="Permanent link">&para;</a></h2>
