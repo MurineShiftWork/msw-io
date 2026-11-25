@@ -1,0 +1,411 @@
+{
+  "schema_version": 3,
+  "machine": {
+    "name": "machine-a",
+    "os": "windows",
+    "paths": {
+      "config_dir": "D:/configs",
+      "data_dir": "D:/data"
+    },
+    "services": {
+      "labwatch": {
+        "url": "https://labwatch.example.invalid",
+        "token": {
+          "secret": "labwatch_token"
+        }
+      }
+    }
+  },
+  "setup": "alfa",
+  "subject": "lgcyX1",
+  "task": "sequence",
+  "mode": null,
+  "requires": [
+    "bpod",
+    "box",
+    "sound"
+  ],
+  "uses": {
+    "bpod": "bpod-a",
+    "box": "kappa",
+    "sound": "speaker-a"
+  },
+  "devices": {
+    "bpod-a": {
+      "type": "bpod",
+      "port": "COM1",
+      "port_by_path": null
+    },
+    "speaker-a": {
+      "type": "sound",
+      "port": null,
+      "port_by_path": null,
+      "device": "Speakers (USB Audio A)"
+    }
+  },
+  "boxes": {
+    "kappa": {
+      "ports": {
+        "1": {
+          "water": true
+        },
+        "2": {
+          "water": true
+        },
+        "3": {
+          "water": true
+        },
+        "6": {
+          "water": true
+        },
+        "7": {
+          "water": true
+        }
+      },
+      "valves": {
+        "2": {
+          "calibration": {
+            "updated": "2026-06-04T14:16:30",
+            "points": [
+              [
+                0.0114,
+                0.824
+              ],
+              [
+                0.0807,
+                6.528
+              ],
+              [
+                0.15,
+                13.142
+              ]
+            ]
+          }
+        },
+        "1": {
+          "calibration": {
+            "updated": "2026-06-04T14:22:59",
+            "points": [
+              [
+                0.0122,
+                0.566
+              ],
+              [
+                0.0581,
+                4.0
+              ],
+              [
+                0.15,
+                12.25
+              ]
+            ]
+          }
+        },
+        "6": {
+          "calibration": {
+            "updated": "2026-06-04T14:22:59",
+            "points": [
+              [
+                0.0122,
+                0.566
+              ],
+              [
+                0.0581,
+                4.0
+              ],
+              [
+                0.15,
+                12.25
+              ]
+            ]
+          }
+        },
+        "3": {
+          "calibration": {
+            "updated": "2026-06-04T14:37:17",
+            "points": [
+              [
+                0.0123,
+                0.536
+              ],
+              [
+                0.0811,
+                5.658
+              ],
+              [
+                0.15,
+                12.154
+              ]
+            ]
+          }
+        },
+        "7": {
+          "calibration": {
+            "updated": "2026-06-04T14:43:38",
+            "points": [
+              [
+                0.0111,
+                0.772
+              ],
+              [
+                0.0574,
+                4.37
+              ],
+              [
+                0.15,
+                13.528
+              ]
+            ]
+          }
+        }
+      },
+      "lick_sensors": {}
+    }
+  },
+  "settings": {
+    "barcode": {
+      "bit_duration_ms": 35.0,
+      "bits": 20
+    },
+    "sound": {
+      "reward": {
+        "frequency": 10000,
+        "duration_s": 0.1,
+        "amplitude": 0.1
+      }
+    },
+    "tasks": {
+      "sequence": {
+        "curriculum": {
+          "enabled": true,
+          "defaults": {
+            "reward": {
+              "final_plateau": 3.0
+            }
+          }
+        },
+        "reward_perturbation": {
+          "enabled": true,
+          "target": "position",
+          "distribution": {
+            "4": [
+              {
+                "amount_ul": 50.0,
+                "probability": 0.02
+              }
+            ]
+          }
+        },
+        "reward": {
+          "amount_ul": 3.0
+        }
+      }
+    },
+    "calibration_policy": {
+      "stale_days": 180
+    }
+  },
+  "state": {
+    "curriculum": {
+      "level": 12,
+      "updated": "2026-10-16T16:59:47"
+    }
+  },
+  "identity": {
+    "registered": "2026-08-19T14:10:11",
+    "project": "proj-a",
+    "experiment": "exp-a",
+    "aliases": []
+  },
+  "secrets": {
+    "/machine/services/labwatch/token": "labwatch_token"
+  },
+  "provenance": {
+    "/boxes/kappa/ports/1/water": {
+      "level": "machine",
+      "file": "machines/machine-a.yaml"
+    },
+    "/boxes/kappa/ports/2/water": {
+      "level": "machine",
+      "file": "machines/machine-a.yaml"
+    },
+    "/boxes/kappa/ports/3/water": {
+      "level": "machine",
+      "file": "machines/machine-a.yaml"
+    },
+    "/boxes/kappa/ports/6/water": {
+      "level": "machine",
+      "file": "machines/machine-a.yaml"
+    },
+    "/boxes/kappa/ports/7/water": {
+      "level": "machine",
+      "file": "machines/machine-a.yaml"
+    },
+    "/boxes/kappa/valves/1/calibration/points": {
+      "level": "machine",
+      "file": "machines/machine-a.yaml"
+    },
+    "/boxes/kappa/valves/1/calibration/updated": {
+      "level": "machine",
+      "file": "machines/machine-a.yaml"
+    },
+    "/boxes/kappa/valves/2/calibration/points": {
+      "level": "machine",
+      "file": "machines/machine-a.yaml"
+    },
+    "/boxes/kappa/valves/2/calibration/updated": {
+      "level": "machine",
+      "file": "machines/machine-a.yaml"
+    },
+    "/boxes/kappa/valves/3/calibration/points": {
+      "level": "machine",
+      "file": "machines/machine-a.yaml"
+    },
+    "/boxes/kappa/valves/3/calibration/updated": {
+      "level": "machine",
+      "file": "machines/machine-a.yaml"
+    },
+    "/boxes/kappa/valves/6/calibration/points": {
+      "level": "machine",
+      "file": "machines/machine-a.yaml"
+    },
+    "/boxes/kappa/valves/6/calibration/updated": {
+      "level": "machine",
+      "file": "machines/machine-a.yaml"
+    },
+    "/boxes/kappa/valves/7/calibration/points": {
+      "level": "machine",
+      "file": "machines/machine-a.yaml"
+    },
+    "/boxes/kappa/valves/7/calibration/updated": {
+      "level": "machine",
+      "file": "machines/machine-a.yaml"
+    },
+    "/devices/bpod-a/port": {
+      "level": "machine",
+      "file": "machines/machine-a.yaml"
+    },
+    "/devices/bpod-a/type": {
+      "level": "machine",
+      "file": "machines/machine-a.yaml"
+    },
+    "/devices/speaker-a/device": {
+      "level": "machine",
+      "file": "machines/machine-a.yaml"
+    },
+    "/devices/speaker-a/type": {
+      "level": "machine",
+      "file": "machines/machine-a.yaml"
+    },
+    "/identity/aliases": {
+      "level": "subject",
+      "file": "subjects/lgcyX1.yaml"
+    },
+    "/identity/experiment": {
+      "level": "subject",
+      "file": "subjects/lgcyX1.yaml"
+    },
+    "/identity/project": {
+      "level": "subject",
+      "file": "subjects/lgcyX1.yaml"
+    },
+    "/identity/registered": {
+      "level": "subject",
+      "file": "subjects/lgcyX1.yaml"
+    },
+    "/machine/os": {
+      "level": "machine",
+      "file": "machines/machine-a.yaml"
+    },
+    "/machine/paths/config_dir": {
+      "level": "machine",
+      "file": "machines/machine-a.yaml"
+    },
+    "/machine/paths/data_dir": {
+      "level": "machine",
+      "file": "machines/machine-a.yaml"
+    },
+    "/machine/services/labwatch/token/secret": {
+      "level": "machine",
+      "file": "machines/machine-a.yaml"
+    },
+    "/machine/services/labwatch/url": {
+      "level": "machine",
+      "file": "machines/machine-a.yaml"
+    },
+    "/requires": {
+      "level": "task",
+      "file": "tasks/sequence.yaml"
+    },
+    "/settings/barcode/bit_duration_ms": {
+      "level": "defaults",
+      "file": null
+    },
+    "/settings/barcode/bits": {
+      "level": "defaults",
+      "file": null
+    },
+    "/settings/calibration_policy/stale_days": {
+      "level": "setup",
+      "file": "setups/alfa.yaml"
+    },
+    "/settings/sound/reward/amplitude": {
+      "level": "subject",
+      "file": "subjects/lgcyX1.yaml"
+    },
+    "/settings/sound/reward/duration_s": {
+      "level": "subject",
+      "file": "subjects/lgcyX1.yaml"
+    },
+    "/settings/sound/reward/frequency": {
+      "level": "subject",
+      "file": "subjects/lgcyX1.yaml"
+    },
+    "/settings/tasks/sequence/curriculum/defaults/reward/final_plateau": {
+      "level": "subject",
+      "file": "subjects/lgcyX1.yaml"
+    },
+    "/settings/tasks/sequence/curriculum/enabled": {
+      "level": "task",
+      "file": "tasks/sequence.yaml"
+    },
+    "/settings/tasks/sequence/reward/amount_ul": {
+      "level": "defaults",
+      "file": null
+    },
+    "/settings/tasks/sequence/reward_perturbation/distribution/4": {
+      "level": "subject",
+      "file": "subjects/lgcyX1.yaml"
+    },
+    "/settings/tasks/sequence/reward_perturbation/enabled": {
+      "level": "subject",
+      "file": "subjects/lgcyX1.yaml"
+    },
+    "/settings/tasks/sequence/reward_perturbation/target": {
+      "level": "subject",
+      "file": "subjects/lgcyX1.yaml"
+    },
+    "/state/curriculum/level": {
+      "level": "subject",
+      "file": "subjects/lgcyX1.yaml"
+    },
+    "/state/curriculum/updated": {
+      "level": "subject",
+      "file": "subjects/lgcyX1.yaml"
+    },
+    "/uses/box": {
+      "level": "setup",
+      "file": "setups/alfa.yaml"
+    },
+    "/uses/bpod": {
+      "level": "setup",
+      "file": "setups/alfa.yaml"
+    },
+    "/uses/sound": {
+      "level": "setup",
+      "file": "setups/alfa.yaml"
+    }
+  },
+  "revision": "rev-1",
+  "content_hash": "be6a8c4496d70a7257e12e9775cf006b37886ce572c0183909170fd5f3afd8ee"
+}

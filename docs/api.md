@@ -81,3 +81,27 @@
 ::: murineshiftwork.namespace.migrate.audit
     options:
       show_source: false
+
+## Config (schema version 3)
+
+::: murineshiftwork.config
+    options:
+      show_source: false
+
+::: murineshiftwork.config.loader.load_config
+    options:
+      show_source: false
+
+::: murineshiftwork.config.resolve.resolve
+    options:
+      show_source: false
+
+::: murineshiftwork.config.run.ResolvedRun
+    options:
+      members: true
+      show_source: false
+
+::: murineshiftwork.config.models
+    options:
+      members: true
+      show_source: false

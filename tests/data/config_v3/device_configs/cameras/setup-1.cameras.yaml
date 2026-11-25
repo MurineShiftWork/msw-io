@@ -1,0 +1,4 @@
+---
+cameras:
+  face: {serial: CAM-0001, fps: 30}
+  body: {serial: CAM-0002, fps: 30}

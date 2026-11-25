@@ -1,0 +1,3 @@
+---
+cameras:
+  face: {serial: CAM-0003, fps: 30}

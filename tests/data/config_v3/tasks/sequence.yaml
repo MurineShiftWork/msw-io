@@ -1,0 +1,26 @@
+---
+schema_version: 3
+tasks:
+  sequence:
+    requires: [bpod, box, sound]
+    settings:
+      sound: {reward: {frequency: -1, duration_s: 0.2, amplitude: 0.15}}
+      tasks:
+        sequence:
+          curriculum: {enabled: true}
+    modes:
+      rpe_test:
+        tasks:
+          sequence:
+            trial: {rewards_ul: [0, 0, 0, 0, 3]}
+            curriculum: {enabled: false}
+            stop: {enabled: false}
+            reward_perturbation:
+              enabled: true
+              unperturbed_first_n: 10
+              matched_omission_duration: true
+              distribution:
+                4:
+                  - {amount_ul: 0.0,  probability: 0.15}
+                  - {amount_ul: 9.0,  probability: 0.15}
+                  - {amount_ul: 50.0, probability: 0.02}
