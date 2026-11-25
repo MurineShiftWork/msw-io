@@ -1,0 +1,9 @@
+---
+schema_version: 3
+setups:
+  setup-2:
+    machine: machine-b
+    uses: {bpod: bpod-2, box: hf-2, sound: speaker-2, cameras: cams-2}
+    settings:
+      barcode: {bit_duration_ms: 100.0}
+      cameras: {failure: abort}

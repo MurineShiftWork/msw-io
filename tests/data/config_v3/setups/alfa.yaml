@@ -1,0 +1,8 @@
+---
+schema_version: 3
+setups:
+  alfa:
+    machine: machine-a
+    uses: {bpod: bpod-a, box: kappa, sound: speaker-a}       # no cameras on this setup
+    settings:
+      calibration_policy: {stale_days: 180}

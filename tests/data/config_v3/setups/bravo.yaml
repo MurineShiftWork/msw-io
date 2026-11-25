@@ -1,0 +1,8 @@
+---
+schema_version: 3
+setups:
+  bravo:
+    machine: machine-a
+    uses: {bpod: bpod-b, box: lambda, sound: speaker-b}
+    settings:
+      calibration_policy: {stale_days: 180}

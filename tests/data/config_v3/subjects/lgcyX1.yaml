@@ -1,0 +1,16 @@
+---
+schema_version: 3
+subjects:
+  lgcyX1:
+    identity: {registered: 2026-08-19T14:10:11, project: proj-a, experiment: exp-a, aliases: []}
+    settings:
+      sound: {reward: {frequency: 10000, duration_s: 0.1, amplitude: 0.1}}
+      tasks:
+        sequence:
+          curriculum: {defaults: {reward: {final_plateau: 3.0}}}
+          reward_perturbation:
+            enabled: true
+            target: position
+            distribution: {4: [{amount_ul: 50.0, probability: 0.02}]}
+    state:
+      sequence: {curriculum: {level: 12, updated: 2026-10-16T16:59:47}}

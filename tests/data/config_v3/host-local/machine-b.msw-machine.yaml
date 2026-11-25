@@ -1,0 +1,6 @@
+---
+schema_version: 3
+# Host-only fragment for one machine, loaded last: local overrides, secrets by name only.
+machines:
+  machine-b:
+    paths: {data_dir: /data/local}

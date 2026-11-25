@@ -1,0 +1,39 @@
+---
+schema_version: 3
+# Linux PC with two head-fixed setups.
+machines:
+  machine-b:
+    os: linux
+    paths: {config_dir: /data/configs, data_dir: /data/sessions}
+    services:
+      openephys: {url: "http://openephys.example.invalid"}
+      logagent:  {url: "http://logagent.example.invalid", token: {secret: logagent_token}}
+    devices:
+      bpod-1:     {type: bpod, port_by_path: pci-0000-usb-0:1.1:1.0}
+      stage-1:
+        type: stage_tower
+        port_by_path: pci-0000-usb-0:1.2:1.0-port0
+        axes:
+          x: {id: 11, position_min: 94,  position_max: 667}
+          y: {id: 12, position_min: 430, position_max: 930}
+          z: {id: 13, position_min: 235, position_max: 510}
+        known_positions: {back: {y: {position_raw: 850}}}
+      scale-1:    {type: scale, port_by_path: pci-0000-usb-0:1.4:1.0}
+      speaker-1:  {type: sound, device: speaker_setup_1}
+      cams-1:     {type: cameras, backend: rce, config: device_configs/cameras/setup-1.cameras.yaml}
+      bpod-2:     {type: bpod, port_by_path: pci-0000-usb-0:2.1:1.0}
+      speaker-2:  {type: sound, device: speaker_setup_2}
+      cams-2:     {type: cameras, backend: rce, config: device_configs/cameras/setup-2.cameras.yaml}
+    boxes:
+      hf-1:
+        ports: {1: {water: true}, 3: {water: true}}
+        lick_sensors: {left: Port1In, right: Port3In}
+        valves:
+          1: {calibration: {updated: 2025-08-07T10:11:56, points: [[0.01, 0.55], [0.046, 1.425], [0.082, 1.925]]}}
+          3: {calibration: {updated: 2025-08-07T10:11:56, points: [[0.01, 0.675], [0.046, 1.575], [0.082, 2.125]]}}
+      hf-2:
+        ports: {1: {water: true}, 3: {water: true}}
+        lick_sensors: {left: Port1In, right: Port3In}
+        valves:
+          1: {calibration: {updated: 2026-11-10, points: [[0.01, 0.5], [0.082, 1.9]]}}
+          3: {calibration: {updated: 2026-11-10, points: [[0.01, 0.6], [0.082, 2.0]]}}

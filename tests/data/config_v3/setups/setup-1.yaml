@@ -1,0 +1,10 @@
+---
+schema_version: 3
+setups:
+  setup-1:
+    machine: machine-b
+    uses: {bpod: bpod-1, box: hf-1, stage: stage-1, scale: scale-1, sound: speaker-1, cameras: cams-1}
+    settings:
+      barcode: {bit_duration_ms: 100.0}
+      cameras: {failure: continue}
+      hooks: {post_task: [weigh_subject]}

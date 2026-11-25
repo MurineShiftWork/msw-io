@@ -1,0 +1,31 @@
+---
+schema_version: 3
+# Windows PC with two boxes. Entities only: devices, and boxes with their valve calibrations.
+machines:
+  machine-a:
+    os: windows
+    paths: {config_dir: "D:/configs", data_dir: "D:/data"}
+    services:
+      labwatch: {url: "https://labwatch.example.invalid", token: {secret: labwatch_token}}
+    devices:
+      bpod-a:    {type: bpod, port: COM1}
+      bpod-b:    {type: bpod, port: COM2}
+      speaker-a: {type: sound, device: "Speakers (USB Audio A)"}
+      speaker-b: {type: sound, device: "Speakers (USB Audio B)"}
+    boxes:
+      kappa:
+        ports: {1: {water: true}, 2: {water: true}, 3: {water: true}, 6: {water: true}, 7: {water: true}}
+        valves:
+          2: {calibration: {updated: 2026-06-04T14:16:30, points: [[0.0114, 0.824], [0.0807, 6.528], [0.15, 13.142]]}}
+          1: {calibration: {updated: 2026-06-04T14:22:59, points: [[0.0122, 0.566], [0.0581, 4.0], [0.15, 12.25]]}}
+          6: {calibration: {updated: 2026-06-04T14:22:59, points: [[0.0122, 0.566], [0.0581, 4.0], [0.15, 12.25]]}}
+          3: {calibration: {updated: 2026-06-04T14:37:17, points: [[0.0123, 0.536], [0.0811, 5.658], [0.15, 12.154]]}}
+          7: {calibration: {updated: 2026-06-04T14:43:38, points: [[0.0111, 0.772], [0.0574, 4.37], [0.15, 13.528]]}}
+      lambda:
+        ports: {1: {water: true}, 2: {water: true}, 3: {water: true}, 6: {water: true}, 7: {water: true}}
+        valves:
+          1: {calibration: {updated: 2026-11-20, points: [[0.01, 0.6], [0.15, 12.0]]}}
+          2: {calibration: {updated: 2026-11-20, points: [[0.01, 0.7], [0.15, 12.4]]}}
+          3: {calibration: {updated: 2026-11-20, points: [[0.01, 0.6], [0.15, 12.1]]}}
+          6: {calibration: {updated: 2026-11-20, points: [[0.01, 0.6], [0.15, 11.9]]}}
+          7: {calibration: {updated: 2026-11-20, points: [[0.01, 0.7], [0.15, 12.6]]}}

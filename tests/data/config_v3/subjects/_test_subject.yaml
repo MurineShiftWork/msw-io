@@ -1,0 +1,7 @@
+---
+schema_version: 3
+subjects:
+  _test_subject:
+    identity: {project: test}
+    settings: {}
+    state: {}

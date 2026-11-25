@@ -1,0 +1,529 @@
+{
+  "schema_version": 3,
+  "machine": {
+    "name": "machine-b",
+    "os": "linux",
+    "paths": {
+      "config_dir": "/data/configs",
+      "data_dir": "/data/sessions"
+    },
+    "services": {
+      "openephys": {
+        "url": "http://openephys.example.invalid"
+      },
+      "logagent": {
+        "url": "http://logagent.example.invalid",
+        "token": {
+          "secret": "logagent_token"
+        }
+      }
+    }
+  },
+  "setup": "setup-1",
+  "subject": "lgcyX2",
+  "task": "probabilistic_switching",
+  "mode": "habituation",
+  "requires": [
+    "bpod",
+    "box",
+    "cameras"
+  ],
+  "uses": {
+    "bpod": "bpod-1",
+    "box": "hf-1",
+    "stage": "stage-1",
+    "scale": "scale-1",
+    "sound": "speaker-1",
+    "cameras": "cams-1"
+  },
+  "devices": {
+    "bpod-1": {
+      "type": "bpod",
+      "port": null,
+      "port_by_path": "pci-0000-usb-0:1.1:1.0"
+    },
+    "stage-1": {
+      "type": "stage_tower",
+      "port": null,
+      "port_by_path": "pci-0000-usb-0:1.2:1.0-port0",
+      "axes": {
+        "x": {
+          "id": 11,
+          "position_min": 94,
+          "position_max": 667
+        },
+        "y": {
+          "id": 12,
+          "position_min": 430,
+          "position_max": 930
+        },
+        "z": {
+          "id": 13,
+          "position_min": 235,
+          "position_max": 510
+        }
+      },
+      "known_positions": {
+        "back": {
+          "y": {
+            "position_raw": 850
+          }
+        }
+      }
+    },
+    "scale-1": {
+      "type": "scale",
+      "port": null,
+      "port_by_path": "pci-0000-usb-0:1.4:1.0"
+    },
+    "speaker-1": {
+      "type": "sound",
+      "port": null,
+      "port_by_path": null,
+      "device": "speaker_setup_1"
+    },
+    "cams-1": {
+      "type": "cameras",
+      "port": null,
+      "port_by_path": null,
+      "backend": "rce",
+      "config": {
+        "file": "device_configs/cameras/setup-1.cameras.yaml",
+        "content_sha256": "c6dd58727096a4a78d03cbcdf625eaf5d51ee6c2c53035ccdd1a4d78cc622d27",
+        "content": {
+          "cameras": {
+            "face": {
+              "serial": "CAM-0001",
+              "fps": 30
+            },
+            "body": {
+              "serial": "CAM-0002",
+              "fps": 30
+            }
+          }
+        }
+      }
+    }
+  },
+  "boxes": {
+    "hf-1": {
+      "ports": {
+        "1": {
+          "water": true
+        },
+        "3": {
+          "water": true
+        }
+      },
+      "valves": {
+        "1": {
+          "calibration": {
+            "updated": "2025-08-07T10:11:56",
+            "points": [
+              [
+                0.01,
+                0.55
+              ],
+              [
+                0.046,
+                1.425
+              ],
+              [
+                0.082,
+                1.925
+              ]
+            ]
+          }
+        },
+        "3": {
+          "calibration": {
+            "updated": "2025-08-07T10:11:56",
+            "points": [
+              [
+                0.01,
+                0.675
+              ],
+              [
+                0.046,
+                1.575
+              ],
+              [
+                0.082,
+                2.125
+              ]
+            ]
+          }
+        }
+      },
+      "lick_sensors": {
+        "left": "Port1In",
+        "right": "Port3In"
+      }
+    }
+  },
+  "settings": {
+    "barcode": {
+      "bit_duration_ms": 100.0,
+      "bits": 20
+    },
+    "cameras": {
+      "record": {
+        "video": true,
+        "cameras": [
+          "face",
+          "body"
+        ]
+      },
+      "failure": "continue"
+    },
+    "tasks": {
+      "probabilistic_switching": {
+        "n_max_trials": 100,
+        "probabilities": [
+          [
+            100,
+            99
+          ],
+          [
+            99,
+            100
+          ]
+        ],
+        "min_block_length": 20,
+        "reward_amount_ul": 2.5,
+        "stop_trials": {
+          "enabled": false,
+          "proportion": 0.2
+        },
+        "stimulation": {
+          "enabled": false,
+          "timepoint": "ACTION_INIT",
+          "pulse_frequency_hz": 30
+        },
+        "ports": {
+          "left": 1,
+          "center": 2,
+          "right": 3
+        },
+        "light": {
+          "ports": [
+            "center"
+          ],
+          "intensity": 50
+        }
+      }
+    },
+    "hooks": {
+      "post_task": [
+        "weigh_subject"
+      ]
+    }
+  },
+  "state": {},
+  "identity": {
+    "registered": "2026-11-02T00:00:00",
+    "project": "proj-b",
+    "experiment": "exp-b",
+    "aliases": [
+      "alias-x2"
+    ]
+  },
+  "secrets": {
+    "/machine/services/logagent/token": "logagent_token"
+  },
+  "provenance": {
+    "/boxes/hf-1/lick_sensors/left": {
+      "level": "machine",
+      "file": "machines/machine-b.yaml"
+    },
+    "/boxes/hf-1/lick_sensors/right": {
+      "level": "machine",
+      "file": "machines/machine-b.yaml"
+    },
+    "/boxes/hf-1/ports/1/water": {
+      "level": "machine",
+      "file": "machines/machine-b.yaml"
+    },
+    "/boxes/hf-1/ports/3/water": {
+      "level": "machine",
+      "file": "machines/machine-b.yaml"
+    },
+    "/boxes/hf-1/valves/1/calibration/points": {
+      "level": "machine",
+      "file": "machines/machine-b.yaml"
+    },
+    "/boxes/hf-1/valves/1/calibration/updated": {
+      "level": "machine",
+      "file": "machines/machine-b.yaml"
+    },
+    "/boxes/hf-1/valves/3/calibration/points": {
+      "level": "machine",
+      "file": "machines/machine-b.yaml"
+    },
+    "/boxes/hf-1/valves/3/calibration/updated": {
+      "level": "machine",
+      "file": "machines/machine-b.yaml"
+    },
+    "/devices/bpod-1/port_by_path": {
+      "level": "machine",
+      "file": "machines/machine-b.yaml"
+    },
+    "/devices/bpod-1/type": {
+      "level": "machine",
+      "file": "machines/machine-b.yaml"
+    },
+    "/devices/cams-1/backend": {
+      "level": "machine",
+      "file": "machines/machine-b.yaml"
+    },
+    "/devices/cams-1/config/content/cameras/body/fps": {
+      "level": "machine",
+      "file": "device_configs/cameras/setup-1.cameras.yaml"
+    },
+    "/devices/cams-1/config/content/cameras/body/serial": {
+      "level": "machine",
+      "file": "device_configs/cameras/setup-1.cameras.yaml"
+    },
+    "/devices/cams-1/config/content/cameras/face/fps": {
+      "level": "machine",
+      "file": "device_configs/cameras/setup-1.cameras.yaml"
+    },
+    "/devices/cams-1/config/content/cameras/face/serial": {
+      "level": "machine",
+      "file": "device_configs/cameras/setup-1.cameras.yaml"
+    },
+    "/devices/cams-1/config/content_sha256": {
+      "level": "machine",
+      "file": "device_configs/cameras/setup-1.cameras.yaml"
+    },
+    "/devices/cams-1/config/file": {
+      "level": "machine",
+      "file": "machines/machine-b.yaml"
+    },
+    "/devices/cams-1/type": {
+      "level": "machine",
+      "file": "machines/machine-b.yaml"
+    },
+    "/devices/scale-1/port_by_path": {
+      "level": "machine",
+      "file": "machines/machine-b.yaml"
+    },
+    "/devices/scale-1/type": {
+      "level": "machine",
+      "file": "machines/machine-b.yaml"
+    },
+    "/devices/speaker-1/device": {
+      "level": "machine",
+      "file": "machines/machine-b.yaml"
+    },
+    "/devices/speaker-1/type": {
+      "level": "machine",
+      "file": "machines/machine-b.yaml"
+    },
+    "/devices/stage-1/axes/x/id": {
+      "level": "machine",
+      "file": "machines/machine-b.yaml"
+    },
+    "/devices/stage-1/axes/x/position_max": {
+      "level": "machine",
+      "file": "machines/machine-b.yaml"
+    },
+    "/devices/stage-1/axes/x/position_min": {
+      "level": "machine",
+      "file": "machines/machine-b.yaml"
+    },
+    "/devices/stage-1/axes/y/id": {
+      "level": "machine",
+      "file": "machines/machine-b.yaml"
+    },
+    "/devices/stage-1/axes/y/position_max": {
+      "level": "machine",
+      "file": "machines/machine-b.yaml"
+    },
+    "/devices/stage-1/axes/y/position_min": {
+      "level": "machine",
+      "file": "machines/machine-b.yaml"
+    },
+    "/devices/stage-1/axes/z/id": {
+      "level": "machine",
+      "file": "machines/machine-b.yaml"
+    },
+    "/devices/stage-1/axes/z/position_max": {
+      "level": "machine",
+      "file": "machines/machine-b.yaml"
+    },
+    "/devices/stage-1/axes/z/position_min": {
+      "level": "machine",
+      "file": "machines/machine-b.yaml"
+    },
+    "/devices/stage-1/known_positions/back/y/position_raw": {
+      "level": "machine",
+      "file": "machines/machine-b.yaml"
+    },
+    "/devices/stage-1/port_by_path": {
+      "level": "machine",
+      "file": "machines/machine-b.yaml"
+    },
+    "/devices/stage-1/type": {
+      "level": "machine",
+      "file": "machines/machine-b.yaml"
+    },
+    "/identity/aliases": {
+      "level": "subject",
+      "file": "subjects/lgcyX2.yaml"
+    },
+    "/identity/experiment": {
+      "level": "subject",
+      "file": "subjects/lgcyX2.yaml"
+    },
+    "/identity/project": {
+      "level": "subject",
+      "file": "subjects/lgcyX2.yaml"
+    },
+    "/identity/registered": {
+      "level": "subject",
+      "file": "subjects/lgcyX2.yaml"
+    },
+    "/machine/os": {
+      "level": "machine",
+      "file": "machines/machine-b.yaml"
+    },
+    "/machine/paths/config_dir": {
+      "level": "machine",
+      "file": "machines/machine-b.yaml"
+    },
+    "/machine/paths/data_dir": {
+      "level": "machine",
+      "file": "machines/machine-b.yaml"
+    },
+    "/machine/services/logagent/token/secret": {
+      "level": "machine",
+      "file": "machines/machine-b.yaml"
+    },
+    "/machine/services/logagent/url": {
+      "level": "machine",
+      "file": "machines/machine-b.yaml"
+    },
+    "/machine/services/openephys/url": {
+      "level": "machine",
+      "file": "machines/machine-b.yaml"
+    },
+    "/requires": {
+      "level": "task",
+      "file": "tasks/probabilistic_switching.yaml"
+    },
+    "/settings/barcode/bit_duration_ms": {
+      "level": "setup",
+      "file": "setups/setup-1.yaml"
+    },
+    "/settings/barcode/bits": {
+      "level": "defaults",
+      "file": null
+    },
+    "/settings/cameras/failure": {
+      "level": "setup",
+      "file": "setups/setup-1.yaml"
+    },
+    "/settings/cameras/record/cameras": {
+      "level": "subject",
+      "file": "subjects/lgcyX2.yaml"
+    },
+    "/settings/cameras/record/video": {
+      "level": "task",
+      "file": "tasks/probabilistic_switching.yaml"
+    },
+    "/settings/hooks/post_task": {
+      "level": "setup",
+      "file": "setups/setup-1.yaml"
+    },
+    "/settings/tasks/probabilistic_switching/light/intensity": {
+      "level": "task",
+      "file": "tasks/probabilistic_switching.yaml"
+    },
+    "/settings/tasks/probabilistic_switching/light/ports": {
+      "level": "task",
+      "file": "tasks/probabilistic_switching.yaml"
+    },
+    "/settings/tasks/probabilistic_switching/min_block_length": {
+      "level": "task",
+      "file": "tasks/probabilistic_switching.yaml"
+    },
+    "/settings/tasks/probabilistic_switching/n_max_trials": {
+      "level": "run",
+      "file": null
+    },
+    "/settings/tasks/probabilistic_switching/ports/center": {
+      "level": "task",
+      "file": "tasks/probabilistic_switching.yaml"
+    },
+    "/settings/tasks/probabilistic_switching/ports/left": {
+      "level": "task",
+      "file": "tasks/probabilistic_switching.yaml"
+    },
+    "/settings/tasks/probabilistic_switching/ports/right": {
+      "level": "task",
+      "file": "tasks/probabilistic_switching.yaml"
+    },
+    "/settings/tasks/probabilistic_switching/probabilities": {
+      "level": "mode",
+      "file": "tasks/probabilistic_switching.yaml"
+    },
+    "/settings/tasks/probabilistic_switching/reward_amount_ul": {
+      "level": "subject",
+      "file": "subjects/lgcyX2.yaml"
+    },
+    "/settings/tasks/probabilistic_switching/stimulation/enabled": {
+      "level": "task",
+      "file": "tasks/probabilistic_switching.yaml"
+    },
+    "/settings/tasks/probabilistic_switching/stimulation/pulse_frequency_hz": {
+      "level": "task",
+      "file": "tasks/probabilistic_switching.yaml"
+    },
+    "/settings/tasks/probabilistic_switching/stimulation/timepoint": {
+      "level": "task",
+      "file": "tasks/probabilistic_switching.yaml"
+    },
+    "/settings/tasks/probabilistic_switching/stop_trials/enabled": {
+      "level": "task",
+      "file": "tasks/probabilistic_switching.yaml"
+    },
+    "/settings/tasks/probabilistic_switching/stop_trials/proportion": {
+      "level": "task",
+      "file": "tasks/probabilistic_switching.yaml"
+    },
+    "/uses/box": {
+      "level": "setup",
+      "file": "setups/setup-1.yaml"
+    },
+    "/uses/bpod": {
+      "level": "setup",
+      "file": "setups/setup-1.yaml"
+    },
+    "/uses/cameras": {
+      "level": "setup",
+      "file": "setups/setup-1.yaml"
+    },
+    "/uses/scale": {
+      "level": "setup",
+      "file": "setups/setup-1.yaml"
+    },
+    "/uses/sound": {
+      "level": "setup",
+      "file": "setups/setup-1.yaml"
+    },
+    "/uses/stage": {
+      "level": "setup",
+      "file": "setups/setup-1.yaml"
+    }
+  },
+  "packages": {},
+  "run_id": null,
+  "source": {
+    "kind": "dir",
+    "id": null,
+    "revision": "rev-1",
+    "dirty": null
+  },
+  "payload_sha256": "7b7304077aa1534e5da446e28b90d39bba08390cddbf4a39933671878000778f"
+}

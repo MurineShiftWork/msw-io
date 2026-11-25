@@ -1,0 +1,12 @@
+---
+schema_version: 3
+# Runs two tasks: shared keys plain, per-task keys under tasks.<t> never leak between them.
+subjects:
+  lgcyX2:
+    identity: {registered: 2026-11-02, project: proj-b, experiment: exp-b, aliases: [alias-x2]}
+    settings:
+      cameras: {record: {cameras: [face, body]}}
+      tasks:
+        probabilistic_switching: {reward_amount_ul: 2.5, n_max_trials: 800}
+        sequence: {curriculum: {enabled: false}}
+    state: {}
