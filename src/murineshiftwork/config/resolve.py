@@ -8,7 +8,8 @@ Order of work:
 1. Select the setup, its machine and the task (a task without a site entry
    resolves from package defaults alone) and the subject.
 2. Check that the setup provides every role the task requires, before anything
-   else is built, and map each role through ``uses`` to a machine entity.
+   else is built, and map each role through ``uses`` to a machine entity: the
+   ``box`` role to a box, every other role to a device.
 3. Inline the files that selected devices reference (``FILE_REFERENCES``), so the
    payload carries no file references.
 4. Merge settings by level: package defaults < machine < setup < task < mode <
@@ -51,6 +52,9 @@ from murineshiftwork.config.run import (
 
 ReferenceLoader = Callable[[str], Any]
 """Hook that returns the parsed content of a file referenced from the config."""
+
+BOX_ROLE = "box"
+"""The role resolved from a machine's boxes; every other role names a device."""
 
 FILE_REFERENCES: Mapping[str, tuple[str, ...]] = {"cameras": ("config",)}
 """Device fields that hold a file reference, by device type."""
@@ -173,7 +177,7 @@ def resolve(
     devices: dict[str, Any] = {}
     boxes: dict[str, Any] = {}
     for role, name in setup_cfg.uses.items():
-        if name in machine_cfg.devices:
+        if role != BOX_ROLE and name in machine_cfg.devices:
             if name not in devices:
                 copy_sources((*m_path, "devices", name), ("devices", name), "machine")
                 devices[name] = _inline_device(
@@ -183,13 +187,14 @@ def resolve(
                     file_references,
                     provenance,
                 )
-        elif name in machine_cfg.boxes:
+        elif role == BOX_ROLE and name in machine_cfg.boxes:
             copy_sources((*m_path, "boxes", name), ("boxes", name), "machine")
             boxes[name] = machine_cfg.boxes[name]
         else:
             raise UnknownNameError(
                 f"setup {setup!r} uses {name!r} as {role!r}, but machine "
-                f"{machine_name!r} has no device or box of that name"
+                f"{machine_name!r} has no {'box' if role == BOX_ROLE else 'device'} "
+                "of that name"
             )
 
     for key in ("os", "paths", "services"):
@@ -222,6 +227,8 @@ def resolve(
     for key, src in settings_prov.items():
         provenance[("settings", *key)] = src
 
+    # TODO: whether paths and services stay in the payload depends on what the host
+    # file may hold; bind may fill them from the executing host instead.
     run = ResolvedRun(
         machine=ResolvedMachine(
             name=machine_name,

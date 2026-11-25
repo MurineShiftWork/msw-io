@@ -7,11 +7,11 @@ Host-specific work (device nodes from ``port_by_path``, secret values, local pat
 happens after it, on the host that executes the run.
 
 It is plain JSON data. ``payload_sha256`` is the sha256 of the canonical JSON of the
-payload without the fields that identify one resolution rather than its content
-(``payload_sha256``, ``run_id``, ``source``). The same config content therefore gives
-the same hash wherever and from whichever checkout it was resolved, two sessions with
-the same hash ran the same config, and a receiver can check that the payload arrived
-unchanged.
+payload without the fields that describe one resolution rather than what runs
+(``payload_sha256``, ``run_id``, ``source``, ``provenance``). The hash covers values,
+entities, state and package versions only, so it does not depend on how the config
+is split into files or where it was checked out: two sessions with the same hash ran
+the same config, and a receiver can check that the payload arrived unchanged.
 """
 
 from __future__ import annotations
@@ -38,7 +38,7 @@ LEVELS: tuple[Level, ...] = (
     "run",
 )
 
-HASH_EXCLUDE = frozenset({"payload_sha256", "run_id", "source"})
+HASH_EXCLUDE = frozenset({"payload_sha256", "run_id", "source", "provenance"})
 
 
 def canonical_json(value: Any) -> str:
@@ -127,7 +127,7 @@ class ResolvedRun(_Strict):
         run_id: identifier of this run, when the caller assigns one.
         source: where the config came from.
         payload_sha256: sha256 of the canonical JSON of the payload without
-            ``payload_sha256``, ``run_id`` and ``source``.
+            ``payload_sha256``, ``run_id``, ``source`` and ``provenance``.
     """
 
     schema_version: Literal[3] = SCHEMA_VERSION

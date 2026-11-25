@@ -381,3 +381,30 @@ def test_source_id_prefixes_provenance_and_packages_are_recorded():
     assert src.file == "configs:setups/alfa.yaml"
     assert run.packages == {"task-package": "1.2.3"}
     assert run.source.kind == "git"
+
+
+def test_hash_ignores_file_layout():
+    merged = {}
+    for path in sorted(TREE.glob("*/*.yaml")):
+        if path.parent.name in ("machines", "setups", "tasks", "subjects"):
+            data = yaml.safe_load(path.read_text(encoding="utf-8"))
+            for section, body in data.items():
+                if section != "schema_version":
+                    merged.setdefault(section, {}).update(body)
+    one_file = merge_fragments([("all.yaml", {"schema_version": 3, **merged})])
+    split = load_config(TREE)
+    a = run_of(split, "alfa", "lgcyX1", "sequence")
+    b = run_of(one_file, "alfa", "lgcyX1", "sequence")
+    assert a.provenance != b.provenance
+    assert a.payload_sha256 == b.payload_sha256
+
+
+def test_box_role_resolves_only_from_boxes(config):
+    doc = config.document.model_copy(deep=True)
+    doc.setups["alfa"].uses["box"] = "bpod-a"
+    with pytest.raises(UnknownNameError, match="no box of that name"):
+        resolve(doc, "alfa", "lgcyX1", "sequence")
+    doc.setups["alfa"].uses["box"] = "kappa"
+    doc.setups["alfa"].uses["bpod"] = "kappa"
+    with pytest.raises(UnknownNameError, match="no device of that name"):
+        resolve(doc, "alfa", "lgcyX1", "sequence")
