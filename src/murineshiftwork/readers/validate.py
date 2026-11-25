@@ -17,6 +17,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
+import yaml
+
 from murineshiftwork.readers.session import read_session_data
 
 
@@ -80,6 +82,33 @@ def _check_msw_completeness(session_dir: Path, result: ValidationResult) -> dict
     return sd
 
 
+def _check_cameras(session_dir: Path, result: ValidationResult) -> None:
+    """Flag a camera record in which every group failed (some failed: warning).
+
+    The record is the ``cameras:`` block of ``acquisition_manifest.yaml``; a
+    session without one (no cameras, older sessions) is not checked.
+    """
+    path = session_dir / "acquisition_manifest.yaml"
+    if not path.exists():
+        return
+    try:
+        block = (yaml.safe_load(path.read_text(encoding="utf-8")) or {}).get("cameras")
+    except (OSError, yaml.YAMLError, AttributeError):
+        return
+    groups = block.get("groups") if isinstance(block, dict) else None
+    if not groups:
+        return
+    failed = [
+        str(g.get("name") or "?")
+        for g in groups
+        if isinstance(g, dict) and g.get("status") == "failed"
+    ]
+    if len(failed) == len(groups):
+        result._fail(f"All cameras failed: no video recorded (groups: {failed})")
+    elif failed:
+        result._warn(f"Camera groups failed: {failed}")
+
+
 def validate_session(
     session_dir: str | Path,
     verbose: bool = True,
@@ -88,6 +117,7 @@ def validate_session(
     session_dir = Path(session_dir)
     result = ValidationResult(session_dir=session_dir)
     _check_msw_completeness(session_dir, result)
+    _check_cameras(session_dir, result)
     if verbose:
         result.print_summary()
     return result

@@ -79,3 +79,57 @@ def test_validate_pkl_passes():
 def test_validate_jsonl_version_known():
     result = validate_session(_session_dir("jsonl"), verbose=False)
     assert result.msw_version != "unknown"
+
+
+def _write_cameras(acq_dir, statuses):
+    import yaml
+
+    path = acq_dir / "acquisition_manifest.yaml"
+    data = (yaml.safe_load(path.read_text()) if path.exists() else None) or {}
+    data["cameras"] = {
+        "policy": "continue",
+        "groups": [{"name": f"g{i}", "status": s} for i, s in enumerate(statuses)],
+    }
+    path.write_text(yaml.safe_dump(data))
+
+
+def _fixture_acq(tmp_path):
+    import shutil
+
+    container = "_test_subject__20260619_120000_000000"
+    acq_name = f"{container}__sequence__v1"
+    fixture = Path(__file__).parent / "data" / "fixture_v42"
+
+    dst = tmp_path / acq_name
+    shutil.copytree(fixture / container / acq_name, dst)
+    return dst
+
+
+def test_all_cameras_failed_is_a_failure(tmp_path):
+    from murineshiftwork.readers.validate import validate_session
+
+    acq = _fixture_acq(tmp_path)
+    _write_cameras(acq, ["failed", "failed"])
+    r = validate_session(acq, verbose=False)
+    assert not r.passed
+    assert any("All cameras failed" in m for m in r.issues)
+
+
+def test_some_cameras_failed_is_a_warning(tmp_path):
+    from murineshiftwork.readers.validate import validate_session
+
+    acq = _fixture_acq(tmp_path)
+    _write_cameras(acq, ["complete", "failed"])
+    r = validate_session(acq, verbose=False)
+    assert r.passed
+    assert any("g1" in m for m in r.warnings)
+
+
+def test_cameras_ok_has_no_camera_finding(tmp_path):
+    from murineshiftwork.readers.validate import validate_session
+
+    acq = _fixture_acq(tmp_path)
+    _write_cameras(acq, ["complete", "partial"])
+    r = validate_session(acq, verbose=False)
+    assert r.passed
+    assert not r.warnings

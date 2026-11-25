@@ -70,8 +70,9 @@ msw data validate /data/mouse_01 --json           # machine-readable report
 ```
 
 Exit status is 0 when all are valid, 1 on any issue, 2 for a bad path or no
-session found. A container's manifest status `complete` or `stopped` is a normal
-end; `aborted`, `interrupted` and unknown values are issues, and `running` is one
+session found. A container's manifest status `complete`, `stopped` or `partial` (some
+cameras failed, the rest recorded) is a normal end; `aborted`, `interrupted`,
+`failed` (no camera recorded) and unknown values are issues, and `running` is one
 only with `--running-is-issue` (a live session is running). The vocabulary is
 `murineshiftwork.namespace.manifest.ACQUISITION_STATUSES`.
 

@@ -108,6 +108,8 @@ def test_status_vocabulary():
         "stopped",
         "aborted",
         "interrupted",
+        "partial",
+        "failed",
     )
 
 
@@ -119,6 +121,8 @@ def test_status_vocabulary():
         ("running", None),
         ("aborted", "ended with status 'aborted'"),
         ("interrupted", "ended with status 'interrupted'"),
+        ("partial", None),
+        ("failed", "ended with status 'failed'"),
         ("paused", "unknown status 'paused'"),
     ],
 )

@@ -101,7 +101,15 @@ def init_session_manifest(session_container: str | Path, session_name: str) -> N
     )
 
 
-ACQUISITION_STATUSES = ("running", "complete", "stopped", "aborted", "interrupted")
+ACQUISITION_STATUSES = (
+    "running",
+    "complete",
+    "stopped",
+    "aborted",
+    "interrupted",
+    "partial",
+    "failed",
+)
 """Status vocabulary of a session manifest acquisition entry.
 
 - ``running``: written at start; still there after exit means the process died.
@@ -111,6 +119,8 @@ ACQUISITION_STATUSES = ("running", "complete", "stopped", "aborted", "interrupte
 - ``aborted``: the task raised and the session was ended on the error.
 - ``interrupted``: the process died; set when the next session on the same
   setup finds the stale ``running`` entry.
+- ``partial``: camera peers only; some cameras failed, the others recorded.
+- ``failed``: camera peers only; no camera recorded.
 
 The writers do not enforce it (``status`` stays a free string); validators do.
 
@@ -118,8 +128,9 @@ An entry with ``location: remote`` (plus e.g. ``host``, ``path``, ``backend``,
 set via ``extra``) was recorded on another host and has no local directory.
 """
 
-ACQUISITION_STATUSES_ENDED_OK = ("complete", "stopped")
-"""Statuses of an acquisition that ended normally."""
+ACQUISITION_STATUSES_ENDED_OK = ("complete", "stopped", "partial")
+"""Statuses of an acquisition that ended with usable data (``partial`` has
+data from the cameras that worked)."""
 
 _SESSION_ENTRY_KEYS = frozenset({"basename", "started_at", "ended_at", "status"})
 
