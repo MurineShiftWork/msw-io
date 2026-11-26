@@ -56,7 +56,12 @@ jobs:
         run: uv sync --extra dev
 
       - name: Run tests
-        run: uv run pytest
+        # Skips for a missing module fail the job, except the optional backends
+        # that this job does not install.
+        run: >-
+          uv run pytest --fail-on-import-skips
+          --allow-import-skip=msw_flir_bonsai
+          --allow-import-skip=rpi_camera_ensemble
 
   ci:
     name: CI
